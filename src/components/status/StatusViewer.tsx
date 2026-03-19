@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Status, StatusItem } from '@/data/statusData';
-import { UserAvatar } from './UserAvatar';
+import { UserAvatar } from '@/components/chat/UserAvatar';
 import { X, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';

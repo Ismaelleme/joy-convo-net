@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Message } from '@/types/chat';
 import { useChatStore } from '@/store/chatStore';
-import { Check, CheckCheck, Reply, Pencil, Trash2, Pin, SmilePlus, Forward, MoreVertical, X } from 'lucide-react';
+import { Check, CheckCheck, Reply, Pencil, Trash2, Pin, SmilePlus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const quickEmojis = ['👍', '❤️', '😂', '🔥', '😢', '🎉'];
@@ -35,8 +35,8 @@ export function MessageBubble({ message, chatId, onReply }: MessageBubbleProps) 
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.15 }}
       className={`flex ${isMine ? 'justify-end' : 'justify-start'} group mb-1`}
       onMouseEnter={() => !isDeleted && setShowActions(true)}
@@ -45,7 +45,7 @@ export function MessageBubble({ message, chatId, onReply }: MessageBubbleProps) 
       <div className="relative max-w-[75%] sm:max-w-[65%]">
         {/* Reply context */}
         {message.replyTo && (
-          <div className={`text-[11px] px-3 py-1 mb-0.5 rounded-t-lg border-l-2 border-primary ${
+          <div className={`text-[11px] px-3 py-1 mb-0.5 rounded-t-2xl border-l-2 border-primary ${
             isMine ? 'bg-chat-outgoing/70' : 'bg-chat-incoming/70'
           } text-muted-foreground`}>
             <span className="font-medium text-primary">{message.replyTo.senderId === 'me' ? 'Você' : 'Contato'}</span>
@@ -54,12 +54,12 @@ export function MessageBubble({ message, chatId, onReply }: MessageBubbleProps) 
         )}
 
         <div
-          className={`px-3 py-2 rounded-xl ${
+          className={`px-3.5 py-2 ${
             isDeleted
-              ? 'bg-muted/50 italic text-muted-foreground'
+              ? 'glass glass-border italic text-muted-foreground rounded-2xl'
               : isMine
-                ? 'bg-chat-outgoing text-foreground rounded-br-sm'
-                : 'bg-chat-incoming text-foreground rounded-bl-sm'
+                ? 'bg-gradient-to-br from-primary/20 to-primary/10 glass-border text-foreground rounded-2xl rounded-br-md'
+                : 'glass glass-border text-foreground rounded-2xl rounded-bl-md'
           }`}
         >
           {message.isPinned && (
@@ -72,7 +72,7 @@ export function MessageBubble({ message, chatId, onReply }: MessageBubbleProps) 
                 ref={editRef}
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="bg-input rounded px-2 py-1 text-sm flex-1 outline-none"
+                className="bg-input rounded-lg px-2 py-1 text-sm flex-1 outline-none"
                 autoFocus
               />
               <button type="submit" className="text-primary text-xs">✓</button>
@@ -102,7 +102,7 @@ export function MessageBubble({ message, chatId, onReply }: MessageBubbleProps) 
               <button
                 key={r.emoji}
                 onClick={() => toggleReaction(chatId, message.id, r.emoji)}
-                className={`text-xs px-1.5 py-0.5 rounded-full bg-secondary border border-border ${
+                className={`text-xs px-1.5 py-0.5 rounded-full glass glass-border ${
                   r.users.includes('me') ? 'ring-1 ring-primary' : ''
                 }`}
               >
@@ -114,24 +114,24 @@ export function MessageBubble({ message, chatId, onReply }: MessageBubbleProps) 
 
         {/* Action buttons */}
         {showActions && (
-          <div className={`absolute top-0 ${isMine ? '-left-2 -translate-x-full' : '-right-2 translate-x-full'} flex items-center gap-0.5 bg-popover rounded-lg shadow-lg border border-border p-0.5`}>
-            <button onClick={() => setShowEmojis(!showEmojis)} className="p-1.5 hover:bg-accent rounded transition-colors">
+          <div className={`absolute top-0 ${isMine ? '-left-2 -translate-x-full' : '-right-2 translate-x-full'} flex items-center gap-0.5 glass glass-border rounded-2xl p-0.5 shadow-lg`}>
+            <button onClick={() => setShowEmojis(!showEmojis)} className="p-1.5 hover:bg-muted/50 rounded-xl transition-all">
               <SmilePlus className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
-            <button onClick={() => onReply(message)} className="p-1.5 hover:bg-accent rounded transition-colors">
+            <button onClick={() => onReply(message)} className="p-1.5 hover:bg-muted/50 rounded-xl transition-all">
               <Reply className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
             {isMine && (
               <>
-                <button onClick={() => { setIsEditing(true); setEditContent(message.content); }} className="p-1.5 hover:bg-accent rounded transition-colors">
+                <button onClick={() => { setIsEditing(true); setEditContent(message.content); }} className="p-1.5 hover:bg-muted/50 rounded-xl transition-all">
                   <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
-                <button onClick={() => deleteMessage(chatId, message.id)} className="p-1.5 hover:bg-accent rounded transition-colors">
+                <button onClick={() => deleteMessage(chatId, message.id)} className="p-1.5 hover:bg-muted/50 rounded-xl transition-all">
                   <Trash2 className="w-3.5 h-3.5 text-destructive" />
                 </button>
               </>
             )}
-            <button onClick={() => togglePin(chatId, message.id)} className="p-1.5 hover:bg-accent rounded transition-colors">
+            <button onClick={() => togglePin(chatId, message.id)} className="p-1.5 hover:bg-muted/50 rounded-xl transition-all">
               <Pin className={`w-3.5 h-3.5 ${message.isPinned ? 'text-primary' : 'text-muted-foreground'}`} />
             </button>
           </div>
@@ -139,7 +139,7 @@ export function MessageBubble({ message, chatId, onReply }: MessageBubbleProps) 
 
         {/* Emoji picker */}
         {showEmojis && (
-          <div className={`absolute -top-8 ${isMine ? 'right-0' : 'left-0'} flex gap-1 bg-popover rounded-full shadow-lg border border-border px-2 py-1`}>
+          <div className={`absolute -top-8 ${isMine ? 'right-0' : 'left-0'} flex gap-1 glass glass-border rounded-2xl px-2 py-1 shadow-lg`}>
             {quickEmojis.map((emoji) => (
               <button
                 key={emoji}

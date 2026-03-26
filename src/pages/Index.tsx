@@ -4,7 +4,7 @@ import { ChatView } from '@/components/chat/ChatView';
 import { StatusPage } from '@/components/status/StatusPage';
 import { VideoFeed } from '@/components/videos/VideoFeed';
 import { useChatStore } from '@/store/chatStore';
-import { MessageCircle, Circle, Play } from 'lucide-react';
+import { MessageCircle, Circle, Play, Compass } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 type Tab = 'chat' | 'status' | 'videos';
@@ -14,20 +14,19 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<Tab>('chat');
 
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: 'chat', label: 'Conversas', icon: MessageCircle },
-    { key: 'status', label: 'Status', icon: Circle },
-    { key: 'videos', label: 'Explorar', icon: Play },
+    { key: 'chat', label: 'Chat', icon: MessageCircle },
+    { key: 'status', label: 'Stories', icon: Circle },
+    { key: 'videos', label: 'Explorar', icon: Compass },
   ];
 
   return (
-    <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
+    <div className="flex flex-col h-screen w-full overflow-hidden bg-background bg-noise">
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden relative">
         {activeTab === 'chat' && (
           <>
-            {/* Sidebar */}
             <div
-              className={`w-full md:w-[380px] md:min-w-[380px] flex-shrink-0 ${
+              className={`w-full md:w-[360px] md:min-w-[360px] flex-shrink-0 ${
                 !showMobileSidebar && activeChatId ? 'hidden md:flex' : 'flex'
               }`}
             >
@@ -35,7 +34,6 @@ const Index = () => {
                 <ChatSidebar />
               </div>
             </div>
-            {/* Chat view */}
             <div
               className={`flex-1 relative ${
                 showMobileSidebar && !activeChatId ? 'hidden md:flex' : 'flex'
@@ -59,30 +57,32 @@ const Index = () => {
         )}
       </div>
 
-      {/* Bottom navigation */}
-      <nav className="flex items-center justify-around border-t border-border bg-card px-4 py-2 flex-shrink-0">
+      {/* Bottom navigation — glassmorphism */}
+      <nav className="glass glass-border flex items-center justify-around px-6 py-2 flex-shrink-0 relative z-30">
         {tabs.map(({ key, label, icon: Icon }) => {
           const isActive = activeTab === key;
           return (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className="relative flex flex-col items-center gap-1 px-4 py-1 transition-colors"
+              className="relative flex flex-col items-center gap-0.5 px-5 py-1.5 transition-all"
             >
               {isActive && (
                 <motion.div
-                  layoutId="tab-indicator"
-                  className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full"
+                  layoutId="nav-glow"
+                  className="absolute inset-0 rounded-2xl bg-primary/10"
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}
               <Icon
-                className={`w-5 h-5 transition-colors ${
+                className={`w-5 h-5 transition-all relative z-10 ${
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 }`}
-                fill={key === 'videos' && isActive ? 'currentColor' : 'none'}
+                fill={isActive ? 'currentColor' : 'none'}
+                strokeWidth={isActive ? 2.5 : 1.5}
               />
               <span
-                className={`text-[10px] font-medium transition-colors ${
+                className={`text-[10px] font-medium transition-all relative z-10 ${
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >

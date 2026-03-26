@@ -2,54 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @layer base {
   :root {
-    --background: 230 25% 7%;
-    --foreground: 220 15% 93%;
+    --background: 225 20% 4%;
+    --foreground: 210 20% 95%;
 
-    --card: 230 22% 10%;
-    --card-foreground: 220 15% 93%;
+    --card: 225 18% 8%;
+    --card-foreground: 210 20% 95%;
 
-    --popover: 230 22% 13%;
-    --popover-foreground: 220 15% 93%;
+    --popover: 225 20% 10%;
+    --popover-foreground: 210 20% 95%;
 
-    --primary: 210 100% 56%;
+    --primary: 220 90% 56%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 260 20% 16%;
-    --secondary-foreground: 260 15% 80%;
+    --secondary: 225 15% 13%;
+    --secondary-foreground: 210 15% 75%;
 
-    --muted: 230 18% 18%;
-    --muted-foreground: 220 10% 50%;
+    --muted: 225 12% 16%;
+    --muted-foreground: 215 12% 48%;
 
-    --accent: 280 30% 22%;
-    --accent-foreground: 280 20% 90%;
+    --accent: 230 20% 18%;
+    --accent-foreground: 210 20% 88%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 230 15% 18%;
-    --input: 230 15% 20%;
-    --ring: 210 100% 56%;
+    --border: 225 12% 14%;
+    --input: 225 14% 12%;
+    --ring: 220 90% 56%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    --chat-outgoing: 210 40% 18%;
-    --chat-incoming: 230 22% 13%;
-    --chat-bg: 230 25% 5%;
-    --chat-hover: 230 18% 16%;
-    --chat-active: 230 18% 22%;
-    --online: 150 80% 45%;
-    --typing: 210 100% 56%;
+    --chat-outgoing: 220 50% 15%;
+    --chat-incoming: 225 16% 10%;
+    --chat-bg: 225 22% 3%;
+    --chat-hover: 225 15% 12%;
+    --chat-active: 220 30% 16%;
+    --online: 160 84% 45%;
+    --typing: 220 90% 56%;
 
-    --sidebar-background: 230 22% 8%;
-    --sidebar-foreground: 220 15% 93%;
-    --sidebar-primary: 210 100% 56%;
+    --sidebar-background: 225 18% 6%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 220 90% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 260 20% 16%;
-    --sidebar-accent-foreground: 260 15% 80%;
-    --sidebar-border: 230 15% 15%;
-    --sidebar-ring: 210 100% 56%;
+    --sidebar-accent: 225 15% 13%;
+    --sidebar-accent-foreground: 210 15% 75%;
+    --sidebar-border: 225 12% 12%;
+    --sidebar-ring: 220 90% 56%;
+
+    --glass: 225 20% 8% / 0.6;
+    --glow-primary: 220 90% 56%;
+    --glow-accent: 200 80% 50%;
   }
 }
 
@@ -59,7 +65,10 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
   }
 }
 
@@ -69,13 +78,46 @@
     scrollbar-color: hsl(var(--muted)) transparent;
   }
   .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
   }
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: hsl(var(--muted));
-    border-radius: 3px;
+    border-radius: 2px;
+  }
+
+  .glass {
+    background: hsl(var(--glass));
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  }
+
+  .glass-border {
+    border: 1px solid hsl(210 20% 95% / 0.06);
+  }
+
+  .glow-sm {
+    box-shadow: 0 0 20px -6px hsl(var(--glow-primary) / 0.25);
+  }
+
+  .glow-lg {
+    box-shadow: 0 0 40px -8px hsl(var(--glow-primary) / 0.3);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--glow-primary)), hsl(var(--glow-accent)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-gradient-brand {
+    background: linear-gradient(135deg, hsl(var(--glow-primary)), hsl(var(--glow-accent)));
+  }
+
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
   }
 }

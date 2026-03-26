@@ -11,7 +11,7 @@ interface AvatarProps {
 const sizeMap = {
   sm: 'w-8 h-8 text-xs',
   md: 'w-10 h-10 text-sm',
-  lg: 'w-12 h-12 text-base',
+  lg: 'w-14 h-14 text-lg',
 };
 
 const statusSizeMap = {
@@ -20,15 +20,21 @@ const statusSizeMap = {
   lg: 'w-3.5 h-3.5',
 };
 
-const colors = [
-  'bg-emerald-600', 'bg-blue-600', 'bg-purple-600', 'bg-rose-600',
-  'bg-amber-600', 'bg-cyan-600', 'bg-indigo-600', 'bg-pink-600',
+const gradients = [
+  'from-blue-500 to-cyan-400',
+  'from-indigo-500 to-blue-400',
+  'from-violet-500 to-indigo-400',
+  'from-sky-500 to-blue-400',
+  'from-blue-600 to-sky-400',
+  'from-cyan-500 to-blue-500',
+  'from-indigo-600 to-cyan-400',
+  'from-blue-500 to-violet-400',
 ];
 
-function getColor(name: string) {
+function getGradient(name: string) {
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return colors[Math.abs(hash) % colors.length];
+  return gradients[Math.abs(hash) % gradients.length];
 }
 
 function getInitials(name: string) {
@@ -41,13 +47,13 @@ export function UserAvatar({ user, name, size = 'md', showStatus = false, classN
 
   return (
     <div className={`relative flex-shrink-0 ${className}`}>
-      <div className={`${sizeMap[size]} ${getColor(displayName)} rounded-full flex items-center justify-center font-semibold text-primary-foreground`}>
+      <div className={`${sizeMap[size]} bg-gradient-to-br ${getGradient(displayName)} rounded-2xl flex items-center justify-center font-bold text-primary-foreground shadow-lg`}>
         {getInitials(displayName)}
       </div>
       {showStatus && status && (
         <span
-          className={`absolute bottom-0 right-0 ${statusSizeMap[size]} rounded-full border-2 border-background ${
-            status === 'online' ? 'bg-online' : status === 'away' ? 'bg-amber-500' : 'bg-muted-foreground'
+          className={`absolute -bottom-0.5 -right-0.5 ${statusSizeMap[size]} rounded-full border-2 border-background ${
+            status === 'online' ? 'bg-online' : status === 'away' ? 'bg-amber-400' : 'bg-muted-foreground'
           }`}
         />
       )}

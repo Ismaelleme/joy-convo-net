@@ -5,7 +5,7 @@ import { MessageBubble } from './MessageBubble';
 import { ChatInput } from './ChatInput';
 import { TypingIndicator } from './TypingIndicator';
 import { Message } from '@/types/chat';
-import { ArrowLeft, Phone, Video, Search, MoreVertical, Star, Archive, Users, Pin, X } from 'lucide-react';
+import { ArrowLeft, Phone, Video, Search, Star, Archive, Users, Pin, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function ChatView() {
@@ -27,14 +27,14 @@ export function ChatView() {
 
   if (!chat) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-chat-bg text-muted-foreground">
-        <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <div className="flex-1 flex flex-col items-center justify-center bg-chat-bg bg-noise text-muted-foreground">
+        <div className="w-20 h-20 rounded-3xl glass glass-border flex items-center justify-center mb-5 glow-lg">
+          <svg className="w-9 h-9 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
         </div>
-        <h2 className="text-lg font-medium text-foreground mb-1">ZapFlow Messenger</h2>
-        <p className="text-sm">Selecione uma conversa para começar</p>
+        <h2 className="text-lg font-bold text-gradient mb-1">iSync Messenger</h2>
+        <p className="text-sm text-muted-foreground">Selecione uma conversa para começar</p>
       </div>
     );
   }
@@ -52,37 +52,37 @@ export function ChatView() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-chat-bg">
+    <div className="flex-1 flex flex-col h-full bg-chat-bg bg-noise">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-card border-b border-border">
-        <button onClick={handleBack} className="md:hidden p-1 text-muted-foreground hover:text-foreground">
+      <div className="flex items-center gap-3 px-4 py-3 glass glass-border">
+        <button onClick={handleBack} className="md:hidden p-1.5 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted/50 transition-all">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <button onClick={() => setShowInfo(!showInfo)} className="flex items-center gap-3 flex-1 min-w-0">
           <UserAvatar user={otherUser} name={chat.name} showStatus={chat.type === 'direct'} />
           <div className="min-w-0">
-            <h2 className="font-semibold text-sm text-foreground truncate">{chat.name}</h2>
+            <h2 className="font-bold text-sm text-foreground truncate">{chat.name}</h2>
             <p className="text-xs text-muted-foreground">
               {isTyping ? (
-                <span className="flex items-center gap-1 text-typing">digitando <TypingIndicator /></span>
+                <span className="flex items-center gap-1 text-primary">digitando <TypingIndicator /></span>
               ) : otherUser?.status === 'online' ? (
                 <span className="text-online">online</span>
               ) : chat.type === 'group' ? (
-                `${chat.participants.length} participantes`
+                `${chat.participants.length} membros`
               ) : (
                 'offline'
               )}
             </p>
           </div>
         </button>
-        <div className="flex items-center gap-1">
-          <button onClick={() => setShowSearch(!showSearch)} className="p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-accent transition-colors">
+        <div className="flex items-center gap-0.5">
+          <button onClick={() => setShowSearch(!showSearch)} className="p-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted/50 transition-all">
             <Search className="w-5 h-5" />
           </button>
-          <button className="p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-accent transition-colors">
+          <button className="p-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted/50 transition-all">
             <Phone className="w-5 h-5" />
           </button>
-          <button className="p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-accent transition-colors">
+          <button className="p-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted/50 transition-all">
             <Video className="w-5 h-5" />
           </button>
         </div>
@@ -95,7 +95,7 @@ export function ChatView() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="px-4 py-2 bg-card border-b border-border"
+            className="px-4 py-2 glass border-b border-border/30"
           >
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -104,7 +104,7 @@ export function ChatView() {
                 placeholder="Buscar mensagens..."
                 value={messageSearchQuery}
                 onChange={(e) => setMessageSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-8 py-2 bg-input rounded-lg text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                className="w-full pl-10 pr-8 py-2 glass glass-border rounded-2xl text-sm text-foreground placeholder:text-muted-foreground outline-none"
                 autoFocus
               />
               <button onClick={() => { setShowSearch(false); setMessageSearchQuery(''); }} className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -117,7 +117,7 @@ export function ChatView() {
 
       {/* Pinned messages banner */}
       {pinnedMsgs.length > 0 && (
-        <div className="px-4 py-2 bg-secondary/50 border-b border-border flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="px-4 py-2 glass border-b border-border/30 flex items-center gap-2 text-xs text-muted-foreground">
           <Pin className="w-3 h-3 text-primary" />
           <span className="truncate">{pinnedMsgs.length} mensagem(ns) fixada(s)</span>
         </div>
@@ -147,27 +147,27 @@ export function ChatView() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25 }}
-            className="absolute right-0 top-0 bottom-0 w-80 bg-card border-l border-border z-50 flex flex-col shadow-2xl"
+            className="absolute right-0 top-0 bottom-0 w-80 glass glass-border z-50 flex flex-col shadow-2xl"
           >
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <h3 className="font-semibold text-foreground">Info</h3>
-              <button onClick={() => setShowInfo(false)}>
+            <div className="p-4 border-b border-border/30 flex items-center justify-between">
+              <h3 className="font-bold text-foreground">Detalhes</h3>
+              <button onClick={() => setShowInfo(false)} className="p-1.5 rounded-xl hover:bg-muted/50 transition-all">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               <div className="flex flex-col items-center text-center">
                 <UserAvatar user={otherUser} name={chat.name} size="lg" showStatus />
-                <h3 className="font-semibold text-foreground mt-3">{chat.name}</h3>
+                <h3 className="font-bold text-foreground mt-3">{chat.name}</h3>
                 {chat.description && <p className="text-xs text-muted-foreground mt-1">{chat.description}</p>}
               </div>
 
               <div className="space-y-1">
-                <button onClick={() => toggleFavorite(chat.id)} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm">
-                  <Star className={`w-4 h-4 ${chat.isFavorite ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground'}`} />
+                <button onClick={() => toggleFavorite(chat.id)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-muted/40 transition-all text-sm">
+                  <Star className={`w-4 h-4 ${chat.isFavorite ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'}`} />
                   {chat.isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                 </button>
-                <button onClick={() => toggleArchive(chat.id)} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm">
+                <button onClick={() => toggleArchive(chat.id)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-muted/40 transition-all text-sm">
                   <Archive className="w-4 h-4 text-muted-foreground" />
                   {chat.isArchived ? 'Desarquivar' : 'Arquivar'}
                 </button>
@@ -176,11 +176,11 @@ export function ChatView() {
               {chat.type === 'group' && (
                 <div>
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-2 flex items-center gap-1">
-                    <Users className="w-3 h-3" /> Participantes ({chat.participants.length})
+                    <Users className="w-3 h-3" /> Membros ({chat.participants.length})
                   </h4>
                   <div className="space-y-1">
                     {chat.participants.map((p) => (
-                      <div key={p.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg">
+                      <div key={p.id} className="flex items-center gap-2 px-2 py-1.5 rounded-xl">
                         <UserAvatar user={p} size="sm" showStatus />
                         <div className="min-w-0">
                           <p className="text-sm text-foreground truncate">

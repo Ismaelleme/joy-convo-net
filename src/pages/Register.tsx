@@ -78,10 +78,10 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-accent/10 blur-[100px] pointer-events-none" />
+    <div className="min-h-screen bg-background bg-noise flex flex-col items-center justify-center px-6 relative overflow-hidden">
+      {/* Background glows */}
+      <div className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-primary/8 blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-[-100px] right-[-100px] w-[400px] h-[400px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
 
       <div className="w-full max-w-sm relative z-10">
         {/* Logo */}
@@ -90,8 +90,8 @@ const Register = () => {
           animate={{ scale: 1, opacity: 1 }}
           className="flex flex-col items-center mb-10"
         >
-          <img src={logo} alt="iSync" width={72} height={72} className="mb-3" />
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">iSync</h1>
+          <img src={logo} alt="iSync" width={72} height={72} className="mb-3 rounded-2xl" />
+          <h1 className="text-2xl font-bold text-gradient tracking-tight">iSync</h1>
           <p className="text-sm text-muted-foreground mt-1">Conecte-se ao que importa</p>
         </motion.div>
 
@@ -108,18 +108,17 @@ const Register = () => {
               className="space-y-6"
             >
               <div className="text-center space-y-2">
-                <h2 className="text-lg font-semibold text-foreground">Seu número de telefone</h2>
+                <h2 className="text-lg font-bold text-foreground">Seu número de telefone</h2>
                 <p className="text-sm text-muted-foreground">
                   Enviaremos um código SMS para verificar seu número
                 </p>
               </div>
 
               <div className="space-y-3">
-                {/* Country code selector */}
                 <div className="relative">
                   <button
                     onClick={() => setShowCountry(!showCountry)}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-card text-foreground hover:bg-muted transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl glass glass-border text-foreground hover:bg-muted/30 transition-all"
                   >
                     <span className="text-xl">{countryCode.flag}</span>
                     <span className="font-medium">{countryCode.code}</span>
@@ -133,13 +132,13 @@ const Register = () => {
                         initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
-                        className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-xl shadow-lg overflow-hidden z-20"
+                        className="absolute top-full left-0 right-0 mt-1 glass glass-border rounded-2xl shadow-lg overflow-hidden z-20"
                       >
                         {countryCodes.map((cc) => (
                           <button
                             key={cc.code}
                             onClick={() => { setCountryCode(cc); setShowCountry(false); }}
-                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors text-foreground"
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-all text-foreground"
                           >
                             <span className="text-xl">{cc.flag}</span>
                             <span className="font-medium">{cc.code}</span>
@@ -151,14 +150,13 @@ const Register = () => {
                   </AnimatePresence>
                 </div>
 
-                {/* Phone input */}
                 <div className="relative">
                   <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     value={phone}
                     onChange={(e) => { setPhone(formatPhone(e.target.value)); setError(''); }}
                     placeholder="(00) 00000-0000"
-                    className="pl-12 h-13 rounded-xl bg-card border-border text-foreground text-lg tracking-wide"
+                    className="pl-12 h-13 rounded-2xl glass glass-border text-foreground text-lg tracking-wide border-0"
                     inputMode="tel"
                   />
                 </div>
@@ -177,7 +175,7 @@ const Register = () => {
               <Button
                 onClick={handlePhoneSubmit}
                 disabled={isLoading || phone.replace(/\D/g, '').length < 10}
-                className="w-full h-12 rounded-xl text-base font-semibold gap-2"
+                className="w-full h-12 rounded-2xl text-base font-bold gap-2 bg-gradient-brand hover:brightness-110 transition-all glow-sm border-0"
               >
                 {isLoading ? (
                   <motion.div
@@ -215,10 +213,10 @@ const Register = () => {
               </button>
 
               <div className="text-center space-y-2">
-                <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                  <Shield className="w-7 h-7 text-primary" />
+                <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-brand glow-sm flex items-center justify-center mb-4">
+                  <Shield className="w-7 h-7 text-primary-foreground" />
                 </div>
-                <h2 className="text-lg font-semibold text-foreground">Código de verificação</h2>
+                <h2 className="text-lg font-bold text-foreground">Código de verificação</h2>
                 <p className="text-sm text-muted-foreground">
                   Enviamos um código de 6 dígitos para
                   <br />
@@ -233,12 +231,12 @@ const Register = () => {
                   onChange={handleOtpComplete}
                 >
                   <InputOTPGroup>
-                    <InputOTPSlot index={0} className="w-12 h-14 text-xl rounded-lg border-border bg-card text-foreground" />
-                    <InputOTPSlot index={1} className="w-12 h-14 text-xl rounded-lg border-border bg-card text-foreground" />
-                    <InputOTPSlot index={2} className="w-12 h-14 text-xl rounded-lg border-border bg-card text-foreground" />
-                    <InputOTPSlot index={3} className="w-12 h-14 text-xl rounded-lg border-border bg-card text-foreground" />
-                    <InputOTPSlot index={4} className="w-12 h-14 text-xl rounded-lg border-border bg-card text-foreground" />
-                    <InputOTPSlot index={5} className="w-12 h-14 text-xl rounded-lg border-border bg-card text-foreground" />
+                    <InputOTPSlot index={0} className="w-12 h-14 text-xl rounded-2xl glass glass-border text-foreground border-0" />
+                    <InputOTPSlot index={1} className="w-12 h-14 text-xl rounded-2xl glass glass-border text-foreground border-0" />
+                    <InputOTPSlot index={2} className="w-12 h-14 text-xl rounded-2xl glass glass-border text-foreground border-0" />
+                    <InputOTPSlot index={3} className="w-12 h-14 text-xl rounded-2xl glass glass-border text-foreground border-0" />
+                    <InputOTPSlot index={4} className="w-12 h-14 text-xl rounded-2xl glass glass-border text-foreground border-0" />
+                    <InputOTPSlot index={5} className="w-12 h-14 text-xl rounded-2xl glass glass-border text-foreground border-0" />
                   </InputOTPGroup>
                 </InputOTP>
               </div>
@@ -274,13 +272,12 @@ const Register = () => {
               className="space-y-6"
             >
               <div className="text-center space-y-2">
-                <h2 className="text-lg font-semibold text-foreground">Como devemos te chamar?</h2>
+                <h2 className="text-lg font-bold text-foreground">Como devemos te chamar?</h2>
                 <p className="text-sm text-muted-foreground">Escolha o nome que aparecerá no seu perfil</p>
               </div>
 
-              {/* Avatar placeholder */}
               <div className="flex justify-center">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <div className="w-24 h-24 rounded-3xl bg-gradient-brand flex items-center justify-center glow-lg shadow-2xl">
                   <span className="text-3xl font-bold text-primary-foreground">
                     {name ? name[0].toUpperCase() : '?'}
                   </span>
@@ -292,7 +289,7 @@ const Register = () => {
                   value={name}
                   onChange={(e) => { setName(e.target.value); setError(''); }}
                   placeholder="Seu nome"
-                  className="h-13 rounded-xl bg-card border-border text-foreground text-lg text-center"
+                  className="h-13 rounded-2xl glass glass-border text-foreground text-lg text-center border-0"
                   maxLength={30}
                 />
 
@@ -310,7 +307,7 @@ const Register = () => {
               <Button
                 onClick={handleProfileSubmit}
                 disabled={isLoading || !name.trim()}
-                className="w-full h-12 rounded-xl text-base font-semibold gap-2"
+                className="w-full h-12 rounded-2xl text-base font-bold gap-2 bg-gradient-brand hover:brightness-110 transition-all glow-sm border-0"
               >
                 {isLoading ? (
                   <motion.div

@@ -3,26 +3,39 @@ import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatView } from '@/components/chat/ChatView';
 import { StatusPage } from '@/components/status/StatusPage';
 import { VideoFeed } from '@/components/videos/VideoFeed';
+import { FeedPage } from '@/components/feed/FeedPage';
+import { CommunitiesPage } from '@/components/communities/CommunitiesPage';
+import { MarketplacePage } from '@/components/marketplace/MarketplacePage';
+import { CallsPage } from '@/components/calls/CallsPage';
 import { useChatStore } from '@/store/chatStore';
-import { MessageCircle, Circle, Play, Compass } from 'lucide-react';
+import { MessageCircle, Circle, Compass, Home, Users, ShoppingBag, PhoneCall } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-type Tab = 'chat' | 'status' | 'videos';
+type Tab = 'feed' | 'chat' | 'communities' | 'explore' | 'marketplace';
 
 const Index = () => {
   const { activeChatId, showMobileSidebar } = useChatStore();
-  const [activeTab, setActiveTab] = useState<Tab>('chat');
+  const [activeTab, setActiveTab] = useState<Tab>('feed');
+  const [exploreSubTab, setExploreSubTab] = useState<'videos' | 'status' | 'calls'>('videos');
 
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
+    { key: 'feed', label: 'Feed', icon: Home },
     { key: 'chat', label: 'Chat', icon: MessageCircle },
-    { key: 'status', label: 'Stories', icon: Circle },
-    { key: 'videos', label: 'Explorar', icon: Compass },
+    { key: 'communities', label: 'Comunidades', icon: Users },
+    { key: 'explore', label: 'Explorar', icon: Compass },
+    { key: 'marketplace', label: 'Loja', icon: ShoppingBag },
   ];
 
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background bg-noise">
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden relative">
+        {activeTab === 'feed' && (
+          <div className="w-full h-full">
+            <FeedPage />
+          </div>
+        )}
+
         {activeTab === 'chat' && (
           <>
             <div
@@ -44,28 +57,57 @@ const Index = () => {
           </>
         )}
 
-        {activeTab === 'status' && (
-          <div className="w-full h-full relative">
-            <StatusPage />
+        {activeTab === 'communities' && (
+          <div className="w-full h-full">
+            <CommunitiesPage />
           </div>
         )}
 
-        {activeTab === 'videos' && (
-          <div className="w-full h-full relative">
-            <VideoFeed />
+        {activeTab === 'explore' && (
+          <div className="w-full h-full flex flex-col">
+            {/* Sub-tabs */}
+            <div className="flex items-center gap-1 px-4 py-2 glass glass-border">
+              {([
+                { key: 'videos' as const, label: 'Vídeos', icon: Compass },
+                { key: 'status' as const, label: 'Stories', icon: Circle },
+                { key: 'calls' as const, label: 'Chamadas', icon: PhoneCall },
+              ]).map(({ key, label, icon: Icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setExploreSubTab(key)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                    exploreSubTab === key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="flex-1 overflow-hidden">
+              {exploreSubTab === 'videos' && <VideoFeed />}
+              {exploreSubTab === 'status' && <StatusPage />}
+              {exploreSubTab === 'calls' && <CallsPage />}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'marketplace' && (
+          <div className="w-full h-full">
+            <MarketplacePage />
           </div>
         )}
       </div>
 
-      {/* Bottom navigation — glassmorphism */}
-      <nav className="glass glass-border flex items-center justify-around px-6 py-2 flex-shrink-0 relative z-30">
+      {/* Bottom navigation */}
+      <nav className="glass glass-border flex items-center justify-around px-2 py-2 flex-shrink-0 relative z-30">
         {tabs.map(({ key, label, icon: Icon }) => {
           const isActive = activeTab === key;
           return (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className="relative flex flex-col items-center gap-0.5 px-5 py-1.5 transition-all"
+              className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all"
             >
               {isActive && (
                 <motion.div

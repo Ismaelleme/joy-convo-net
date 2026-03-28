@@ -6,6 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import Register from "./pages/Register.tsx";
 import SocialFeatures from "./pages/SocialFeatures.tsx";
+import AdminPanel from "./pages/AdminPanel.tsx";
+import UserSchedule from "./pages/UserSchedule.tsx";
+import UserContact from "./pages/UserContact.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();

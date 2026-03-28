@@ -23,6 +23,9 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/register" element={<Register />} />
           <Route path="/features" element={<SocialFeatures />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/agendar" element={<UserSchedule />} />
+          <Route path="/contato" element={<UserContact />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

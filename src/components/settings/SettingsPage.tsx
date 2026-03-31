@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   User, Bell, Lock, Palette, Moon, Globe, HelpCircle, LogOut,
-  ChevronRight, Camera, Check, Shield, Eye, EyeOff, Smartphone,
+  ChevronRight, Camera, Check, Shield, Eye, EyeOff, Smartphone, Clock,
   Volume2, MessageCircle, Star, Info
 } from 'lucide-react';
 import { UserAvatar } from '@/components/chat/UserAvatar';

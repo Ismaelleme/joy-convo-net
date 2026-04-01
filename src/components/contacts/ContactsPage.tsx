@@ -1,34 +1,32 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Star, Phone, Mail, ExternalLink, UserPlus, X, Circle, Clock, Ban } from 'lucide-react';
+import { Search, Star, Phone, Mail, Video, ExternalLink, UserPlus, X, Circle, Clock, Ban, MessageCircle, ChevronRight } from 'lucide-react';
 import { contacts, contactCategories, type Contact } from '@/data/contactsData';
 import { UserAvatar } from '@/components/chat/UserAvatar';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const statusConfig = {
-  online: { label: 'Online', icon: Circle, color: 'text-green-400 fill-green-400' },
-  offline: { label: 'Offline', icon: Circle, color: 'text-muted-foreground' },
-  away: { label: 'Ausente', icon: Clock, color: 'text-amber-400' },
-  busy: { label: 'Ocupado', icon: Ban, color: 'text-destructive' },
+  online: { label: 'Online', color: 'bg-online' },
+  offline: { label: 'Offline', color: 'bg-muted-foreground' },
+  away: { label: 'Ausente', color: 'bg-amber-400' },
+  busy: { label: 'Ocupado', color: 'bg-destructive' },
 };
 
-const ContactCard = ({ contact, onSelect }: { contact: Contact; onSelect: (c: Contact) => void }) => {
+const ContactCard = ({ contact, onSelect, index }: { contact: Contact; onSelect: (c: Contact) => void; index: number }) => {
   const statusCfg = statusConfig[contact.status];
-  const StatusIcon = statusCfg.icon;
 
   return (
     <motion.button
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.03 }}
       onClick={() => onSelect(contact)}
-      className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-muted/30 transition-all text-left group"
+      className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-muted/30 hover:glass-border-bright transition-all text-left group"
     >
       <div className="relative">
         <UserAvatar name={contact.name} size="md" />
-        <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background flex items-center justify-center ${
-          contact.status === 'online' ? 'bg-green-400' : contact.status === 'busy' ? 'bg-destructive' : contact.status === 'away' ? 'bg-amber-400' : 'bg-muted-foreground'
-        }`} />
+        <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background ${statusCfg.color}`} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
@@ -37,9 +35,12 @@ const ContactCard = ({ contact, onSelect }: { contact: Contact; onSelect: (c: Co
         </div>
         <p className="text-xs text-muted-foreground truncate">{contact.bio || contact.phone}</p>
       </div>
-      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <div className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-primary/15 transition-colors">
           <Phone className="w-4 h-4 text-primary" />
+        </div>
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-primary/15 transition-colors">
+          <MessageCircle className="w-4 h-4 text-primary" />
         </div>
       </div>
     </motion.button>
@@ -57,15 +58,15 @@ const ContactDetail = ({ contact, onClose }: { contact: Contact; onClose: () => 
       className="absolute inset-0 z-20 bg-background bg-noise flex flex-col"
     >
       {/* Header gradient */}
-      <div className="relative h-32 bg-gradient-brand overflow-hidden">
-        <div className="absolute inset-0 bg-background/20" />
+      <div className="relative h-36 bg-gradient-brand overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-mesh opacity-60" />
         <button onClick={onClose} className="absolute top-4 left-4 w-9 h-9 rounded-xl glass flex items-center justify-center z-10">
           <X className="w-5 h-5 text-foreground" />
         </button>
       </div>
 
       {/* Avatar overlapping */}
-      <div className="px-5 -mt-12 relative z-10">
+      <div className="px-5 -mt-14 relative z-10">
         <div className="w-24 h-24 rounded-3xl bg-gradient-brand flex items-center justify-center text-3xl font-bold text-primary-foreground glow-lg border-4 border-background">
           {contact.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
         </div>
@@ -78,7 +79,7 @@ const ContactDetail = ({ contact, onClose }: { contact: Contact; onClose: () => 
             {contact.isFavorite && <Star className="w-4 h-4 text-amber-400 fill-amber-400" />}
           </div>
           <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full ${contact.status === 'online' ? 'bg-green-400' : contact.status === 'busy' ? 'bg-destructive' : contact.status === 'away' ? 'bg-amber-400' : 'bg-muted-foreground'}`} />
+            <span className={`w-2 h-2 rounded-full ${statusCfg.color}`} />
             {statusCfg.label}
             {contact.lastSeen && contact.status !== 'online' && (
               <span className="text-muted-foreground"> · visto {formatDistanceToNow(contact.lastSeen, { addSuffix: true, locale: ptBR })}</span>
@@ -90,32 +91,34 @@ const ContactDetail = ({ contact, onClose }: { contact: Contact; onClose: () => 
           <p className="mt-4 text-sm text-foreground/80 leading-relaxed">{contact.bio}</p>
         )}
 
-        {/* Actions */}
-        <div className="flex gap-3 mt-5">
-          <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl glass glass-border text-sm font-medium text-foreground hover:bg-muted/30 transition-all">
-            <Phone className="w-4 h-4 text-primary" />
-            Ligar
-          </button>
-          <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl glass glass-border text-sm font-medium text-foreground hover:bg-muted/30 transition-all">
-            <Mail className="w-4 h-4 text-primary" />
-            Mensagem
-          </button>
+        {/* Quick actions */}
+        <div className="grid grid-cols-3 gap-2 mt-5">
+          {[
+            { icon: Phone, label: 'Ligar' },
+            { icon: Video, label: 'Vídeo' },
+            { icon: Mail, label: 'Mensagem' },
+          ].map(({ icon: Icon, label }) => (
+            <button key={label} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl glass glass-border hover:glow-xs transition-all">
+              <Icon className="w-5 h-5 text-primary" />
+              <span className="text-[11px] font-medium text-foreground">{label}</span>
+            </button>
+          ))}
         </div>
 
         {/* Info */}
-        <div className="mt-6 space-y-3">
-          <div className="glass glass-border rounded-2xl p-4 space-y-3">
-            <div>
+        <div className="mt-5 space-y-3">
+          <div className="glass glass-border rounded-2xl overflow-hidden divide-y divide-border/30">
+            <div className="px-4 py-3">
               <p className="text-[10px] uppercase text-muted-foreground tracking-wider font-semibold">Telefone</p>
               <p className="text-sm text-foreground mt-0.5">{contact.phone}</p>
             </div>
             {contact.email && (
-              <div>
+              <div className="px-4 py-3">
                 <p className="text-[10px] uppercase text-muted-foreground tracking-wider font-semibold">Email</p>
                 <p className="text-sm text-foreground mt-0.5">{contact.email}</p>
               </div>
             )}
-            <div>
+            <div className="px-4 py-3">
               <p className="text-[10px] uppercase text-muted-foreground tracking-wider font-semibold">Amigos em comum</p>
               <p className="text-sm text-foreground mt-0.5">{contact.mutualFriends} amigos</p>
             </div>
@@ -126,7 +129,7 @@ const ContactDetail = ({ contact, onClose }: { contact: Contact; onClose: () => 
               <p className="text-[10px] uppercase text-muted-foreground tracking-wider font-semibold mb-2">Redes Sociais</p>
               <div className="flex flex-wrap gap-2">
                 {contact.socialLinks.map((link) => (
-                  <button key={link.platform} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass glass-border text-xs text-foreground hover:bg-muted/30 transition-all">
+                  <button key={link.platform} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass glass-border text-xs text-foreground hover:glow-xs transition-all">
                     <ExternalLink className="w-3 h-3 text-primary" />
                     {link.platform}
                   </button>
@@ -157,20 +160,31 @@ export function ContactsPage() {
 
   const onlineCount = contacts.filter(c => c.status === 'online').length;
 
+  // Group by first letter
+  const grouped = filtered.reduce<Record<string, Contact[]>>((acc, c) => {
+    const letter = c.name[0].toUpperCase();
+    if (!acc[letter]) acc[letter] = [];
+    acc[letter].push(c);
+    return acc;
+  }, {});
+  const letters = Object.keys(grouped).sort();
+
   return (
     <div className="h-full flex flex-col relative overflow-hidden">
       <div className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold text-foreground">Contatos</h1>
-              <p className="text-xs text-muted-foreground">{onlineCount} online de {contacts.length}</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-online font-medium">{onlineCount} online</span> · {contacts.length} total
+              </p>
             </div>
-            <button className="w-10 h-10 rounded-2xl glass glass-border flex items-center justify-center hover:bg-muted/30 transition-all">
+            <button className="w-10 h-10 rounded-2xl glass glass-border flex items-center justify-center hover:glow-xs transition-all">
               <UserPlus className="w-5 h-5 text-primary" />
             </button>
-          </div>
+          </motion.div>
 
           {/* Search */}
           <div className="relative">
@@ -180,7 +194,7 @@ export function ContactsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar contato..."
-              className="w-full pl-10 pr-4 py-2.5 glass glass-border rounded-2xl text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 glass glass-border rounded-2xl text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30 focus:glow-xs transition-all"
             />
           </div>
 
@@ -191,7 +205,7 @@ export function ContactsPage() {
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
-                  activeCategory === cat ? 'bg-primary text-primary-foreground' : 'glass glass-border text-muted-foreground hover:text-foreground'
+                  activeCategory === cat ? 'bg-primary text-primary-foreground glow-xs' : 'glass glass-border text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {cat}
@@ -199,19 +213,24 @@ export function ContactsPage() {
             ))}
           </div>
 
-          {/* Contact list */}
-          <div className="space-y-0.5">
-            {filtered.map((contact) => (
-              <ContactCard key={contact.id} contact={contact} onSelect={setSelectedContact} />
-            ))}
-            {filtered.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground text-sm">Nenhum contato encontrado</div>
-            )}
-          </div>
+          {/* Contact list grouped by letter */}
+          {letters.map(letter => (
+            <div key={letter}>
+              <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1 px-1">{letter}</p>
+              <div className="space-y-0.5">
+                {grouped[letter].map((contact, i) => (
+                  <ContactCard key={contact.id} contact={contact} onSelect={setSelectedContact} index={i} />
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {filtered.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground text-sm">Nenhum contato encontrado</div>
+          )}
         </div>
       </div>
 
-      {/* Detail overlay */}
       <AnimatePresence>
         {selectedContact && (
           <ContactDetail contact={selectedContact} onClose={() => setSelectedContact(null)} />

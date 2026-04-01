@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, Clock, Phone, Users, Bell, MapPin, Plus, ChevronLeft, ChevronRight, AlertCircle, CheckCircle2, XCircle, Send } from 'lucide-react';
+import { CalendarDays, Clock, Phone, Users, Bell, MapPin, Plus, AlertCircle, CheckCircle2, XCircle, Send, Zap } from 'lucide-react';
 import { scheduleEvents, availableSlots, eventTypeLabels, type ScheduleEvent } from '@/data/scheduleData';
 import { toast } from 'sonner';
 
@@ -12,7 +12,7 @@ const typeIcons: Record<string, React.ElementType> = {
 };
 
 const typeColors: Record<string, string> = {
-  call: 'bg-green-500/15 text-green-400',
+  call: 'bg-online/15 text-online',
   meeting: 'bg-primary/15 text-primary',
   reminder: 'bg-amber-500/15 text-amber-400',
   event: 'bg-purple-500/15 text-purple-400',
@@ -36,7 +36,7 @@ function formatDate(dateStr: string) {
   return d.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' }).replace('.', '');
 }
 
-const EventCard = ({ event }: { event: ScheduleEvent }) => {
+const EventCard = ({ event, index }: { event: ScheduleEvent; index: number }) => {
   const Icon = typeIcons[event.type] || CalendarDays;
   const StatusIcon = statusIcons[event.status] || Clock;
 
@@ -44,7 +44,8 @@ const EventCard = ({ event }: { event: ScheduleEvent }) => {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`glass glass-border rounded-2xl p-4 transition-all hover:border-primary/20 ${
+      transition={{ delay: index * 0.05 }}
+      className={`glass glass-border rounded-2xl p-4 transition-all hover:glass-border-bright hover:glow-xs ${
         event.status === 'cancelled' ? 'opacity-50' : ''
       }`}
     >
@@ -62,7 +63,7 @@ const EventCard = ({ event }: { event: ScheduleEvent }) => {
             </div>
             <span className={`text-[10px] font-medium px-2 py-0.5 rounded-lg flex items-center gap-1 flex-shrink-0 ${
               event.status === 'upcoming' ? 'bg-primary/15 text-primary' :
-              event.status === 'completed' ? 'bg-green-500/15 text-green-400' : 'bg-destructive/15 text-destructive'
+              event.status === 'completed' ? 'bg-online/15 text-online' : 'bg-destructive/15 text-destructive'
             }`}>
               <StatusIcon className="w-2.5 h-2.5" />
               {event.status === 'upcoming' ? 'Pendente' : event.status === 'completed' ? 'Concluído' : 'Cancelado'}
@@ -137,7 +138,7 @@ const NewEventForm = ({ onClose }: { onClose: () => void }) => {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Título do agendamento"
-        className="w-full bg-muted/20 rounded-xl border border-border/30 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/50"
+        className="w-full bg-muted/20 rounded-xl border border-border/30 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30 transition-all"
       />
 
       <textarea
@@ -145,11 +146,11 @@ const NewEventForm = ({ onClose }: { onClose: () => void }) => {
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Descrição (opcional)"
         rows={2}
-        className="w-full bg-muted/20 rounded-xl border border-border/30 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/50 resize-none"
+        className="w-full bg-muted/20 rounded-xl border border-border/30 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30 resize-none transition-all"
       />
 
       {/* Type selector */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {Object.entries(eventTypeLabels).map(([key, label]) => {
           const Icon = typeIcons[key];
           return (
@@ -157,7 +158,7 @@ const NewEventForm = ({ onClose }: { onClose: () => void }) => {
               key={key}
               onClick={() => setType(key)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                type === key ? 'bg-primary text-primary-foreground' : 'glass glass-border text-muted-foreground hover:text-foreground'
+                type === key ? 'bg-primary text-primary-foreground glow-xs' : 'glass glass-border text-muted-foreground hover:text-foreground'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -203,7 +204,7 @@ const NewEventForm = ({ onClose }: { onClose: () => void }) => {
               key={slot}
               onClick={() => setSelectedTime(slot)}
               className={`py-2 rounded-xl text-xs font-medium transition-all ${
-                selectedTime === slot ? 'bg-primary text-primary-foreground glow-sm' : 'glass glass-border text-foreground hover:bg-muted/30'
+                selectedTime === slot ? 'bg-primary text-primary-foreground glow-xs' : 'glass glass-border text-foreground hover:bg-muted/30'
               }`}
             >
               {slot}
@@ -232,7 +233,6 @@ export function SchedulePage() {
     return e.status === filter;
   });
 
-  // Group by date
   const grouped = filtered.reduce<Record<string, ScheduleEvent[]>>((acc, event) => {
     if (!acc[event.date]) acc[event.date] = [];
     acc[event.date].push(event);
@@ -246,17 +246,41 @@ export function SchedulePage() {
     <div className="h-full overflow-y-auto scrollbar-thin">
       <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground">Agenda</h1>
-            <p className="text-xs text-muted-foreground">{upcomingCount} compromissos pendentes</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Zap className="w-3 h-3 text-primary" />
+              {upcomingCount} compromissos pendentes
+            </p>
           </div>
-          <button
+          <motion.button
+            whileTap={{ scale: 0.9 }}
             onClick={() => setShowNewEvent(true)}
             className="w-10 h-10 rounded-2xl bg-gradient-brand flex items-center justify-center glow-sm hover:brightness-110 transition-all"
           >
             <Plus className="w-5 h-5 text-primary-foreground" />
-          </button>
+          </motion.button>
+        </motion.div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { label: 'Pendentes', value: upcomingCount, color: 'text-primary' },
+            { label: 'Concluídos', value: scheduleEvents.filter(e => e.status === 'completed').length, color: 'text-online' },
+            { label: 'Cancelados', value: scheduleEvents.filter(e => e.status === 'cancelled').length, color: 'text-destructive' },
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="glass glass-border rounded-xl p-3 text-center"
+            >
+              <p className={`text-lg font-bold ${stat.color}`}>{stat.value}</p>
+              <p className="text-[10px] text-muted-foreground">{stat.label}</p>
+            </motion.div>
+          ))}
         </div>
 
         {/* Filters */}
@@ -270,7 +294,7 @@ export function SchedulePage() {
               key={key}
               onClick={() => setFilter(key)}
               className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                filter === key ? 'bg-primary text-primary-foreground' : 'glass glass-border text-muted-foreground hover:text-foreground'
+                filter === key ? 'bg-primary text-primary-foreground glow-xs' : 'glass glass-border text-muted-foreground hover:text-foreground'
               }`}
             >
               {label}
@@ -278,7 +302,6 @@ export function SchedulePage() {
           ))}
         </div>
 
-        {/* New event form */}
         <AnimatePresence>
           {showNewEvent && (
             <div className="glass glass-border rounded-2xl p-5">
@@ -287,15 +310,14 @@ export function SchedulePage() {
           )}
         </AnimatePresence>
 
-        {/* Events grouped by date */}
         {sortedDates.map((date) => (
           <div key={date}>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+            <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2 px-1">
               {formatDate(date)}
             </p>
             <div className="space-y-2">
-              {grouped[date].map((event) => (
-                <EventCard key={event.id} event={event} />
+              {grouped[date].map((event, i) => (
+                <EventCard key={event.id} event={event} index={i} />
               ))}
             </div>
           </div>

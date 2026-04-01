@@ -10,42 +10,43 @@ import { CallsPage } from '@/components/calls/CallsPage';
 import { ContactsPage } from '@/components/contacts/ContactsPage';
 import { SchedulePage } from '@/components/schedule/SchedulePage';
 import { SettingsPage } from '@/components/settings/SettingsPage';
+import { AIAssistantPage } from '@/components/ai/AIAssistantPage';
 import { useChatStore } from '@/store/chatStore';
 import {
   MessageCircle, Circle, Compass, Home, Users, ShoppingBag,
-  PhoneCall, Contact2, CalendarDays, Settings, Bell, Search
+  PhoneCall, Contact2, CalendarDays, Settings, Bell, Search, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-type Tab = 'feed' | 'chat' | 'communities' | 'explore' | 'marketplace' | 'contacts' | 'schedule' | 'settings';
+type Tab = 'feed' | 'chat' | 'ai' | 'contacts' | 'schedule' | 'settings' | 'communities' | 'explore' | 'marketplace';
 
 const Index = () => {
   const { activeChatId, showMobileSidebar } = useChatStore();
   const [activeTab, setActiveTab] = useState<Tab>('feed');
   const [exploreSubTab, setExploreSubTab] = useState<'videos' | 'status' | 'calls'>('videos');
 
-  const bottomTabs: { key: Tab; label: string; icon: React.ElementType; badge?: number }[] = [
+  const bottomTabs: { key: Tab; label: string; icon: React.ElementType; badge?: number; gradient?: boolean }[] = [
     { key: 'feed', label: 'Feed', icon: Home },
     { key: 'chat', label: 'Chat', icon: MessageCircle, badge: 3 },
-    { key: 'contacts', label: 'Contatos', icon: Contact2 },
+    { key: 'ai', label: 'IA', icon: Sparkles, gradient: true },
     { key: 'schedule', label: 'Agenda', icon: CalendarDays },
     { key: 'settings', label: 'Config', icon: Settings },
   ];
 
   const topTabs: { key: Tab; label: string; icon: React.ElementType }[] = [
+    { key: 'contacts', label: 'Contatos', icon: Contact2 },
     { key: 'communities', label: 'Comunidades', icon: Users },
     { key: 'explore', label: 'Explorar', icon: Compass },
     { key: 'marketplace', label: 'Loja', icon: ShoppingBag },
   ];
 
-  const isTopTab = topTabs.some(t => t.key === activeTab);
-
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background bg-noise">
       {/* Top bar */}
-      <header className="flex items-center justify-between px-4 py-2.5 glass glass-border flex-shrink-0 z-20">
-        <h1 className="text-lg font-bold text-gradient tracking-tight">iSync</h1>
-        <div className="flex items-center gap-1">
+      <header className="flex items-center justify-between px-4 py-2.5 glass-strong glass-border flex-shrink-0 z-20 relative">
+        <div className="absolute inset-0 bg-gradient-mesh opacity-30 pointer-events-none" />
+        <h1 className="text-lg font-bold text-gradient tracking-tight relative z-10">iSync</h1>
+        <div className="flex items-center gap-0.5 relative z-10">
           {topTabs.map(({ key, label, icon: Icon }) => {
             const isActive = activeTab === key;
             return (
@@ -58,86 +59,108 @@ const Index = () => {
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">{label}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="top-tab-indicator"
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-primary"
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
               </button>
             );
           })}
-          <button className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all ml-1">
+          <div className="w-px h-5 bg-border/50 mx-1" />
+          <button className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all">
             <Search className="w-4.5 h-4.5" />
           </button>
           <button className="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all">
             <Bell className="w-4.5 h-4.5" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-destructive pulse-ring" />
           </button>
         </div>
       </header>
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden relative">
-        {activeTab === 'feed' && <FeedPage />}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="w-full h-full flex"
+          >
+            {activeTab === 'feed' && <FeedPage />}
 
-        {activeTab === 'chat' && (
-          <>
-            <div className={`w-full md:w-[360px] md:min-w-[360px] flex-shrink-0 ${
-              !showMobileSidebar && activeChatId ? 'hidden md:flex' : 'flex'
-            }`}>
-              <div className="w-full h-full"><ChatSidebar /></div>
-            </div>
-            <div className={`flex-1 relative ${
-              showMobileSidebar && !activeChatId ? 'hidden md:flex' : 'flex'
-            }`}>
-              <ChatView />
-            </div>
-          </>
-        )}
+            {activeTab === 'chat' && (
+              <>
+                <div className={`w-full md:w-[360px] md:min-w-[360px] flex-shrink-0 ${
+                  !showMobileSidebar && activeChatId ? 'hidden md:flex' : 'flex'
+                }`}>
+                  <div className="w-full h-full"><ChatSidebar /></div>
+                </div>
+                <div className={`flex-1 relative ${
+                  showMobileSidebar && !activeChatId ? 'hidden md:flex' : 'flex'
+                }`}>
+                  <ChatView />
+                </div>
+              </>
+            )}
 
-        {activeTab === 'communities' && <CommunitiesPage />}
+            {activeTab === 'ai' && <AIAssistantPage />}
 
-        {activeTab === 'contacts' && <ContactsPage />}
+            {activeTab === 'communities' && <CommunitiesPage />}
 
-        {activeTab === 'schedule' && <SchedulePage />}
+            {activeTab === 'contacts' && <ContactsPage />}
 
-        {activeTab === 'settings' && <SettingsPage />}
+            {activeTab === 'schedule' && <SchedulePage />}
 
-        {activeTab === 'explore' && (
-          <div className="w-full h-full flex flex-col">
-            <div className="flex items-center gap-1 px-4 py-2 glass glass-border">
-              {([
-                { key: 'videos' as const, label: 'Vídeos', icon: Compass },
-                { key: 'status' as const, label: 'Stories', icon: Circle },
-                { key: 'calls' as const, label: 'Chamadas', icon: PhoneCall },
-              ]).map(({ key, label, icon: Icon }) => (
-                <button
-                  key={key}
-                  onClick={() => setExploreSubTab(key)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                    exploreSubTab === key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="flex-1 overflow-hidden">
-              {exploreSubTab === 'videos' && <VideoFeed />}
-              {exploreSubTab === 'status' && <StatusPage />}
-              {exploreSubTab === 'calls' && <CallsPage />}
-            </div>
-          </div>
-        )}
+            {activeTab === 'settings' && <SettingsPage />}
 
-        {activeTab === 'marketplace' && <MarketplacePage />}
+            {activeTab === 'explore' && (
+              <div className="w-full h-full flex flex-col">
+                <div className="flex items-center gap-1 px-4 py-2 glass glass-border">
+                  {([
+                    { key: 'videos' as const, label: 'Vídeos', icon: Compass },
+                    { key: 'status' as const, label: 'Stories', icon: Circle },
+                    { key: 'calls' as const, label: 'Chamadas', icon: PhoneCall },
+                  ]).map(({ key, label, icon: Icon }) => (
+                    <button
+                      key={key}
+                      onClick={() => setExploreSubTab(key)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                        exploreSubTab === key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  {exploreSubTab === 'videos' && <VideoFeed />}
+                  {exploreSubTab === 'status' && <StatusPage />}
+                  {exploreSubTab === 'calls' && <CallsPage />}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'marketplace' && <MarketplacePage />}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Bottom navigation */}
-      <nav className="glass glass-border flex items-center justify-around px-2 py-2 flex-shrink-0 relative z-30">
-        {bottomTabs.map(({ key, label, icon: Icon, badge }) => {
+      <nav className="glass-strong glass-border flex items-center justify-around px-2 py-2 flex-shrink-0 relative z-30">
+        <div className="absolute inset-0 bg-gradient-mesh opacity-20 pointer-events-none" />
+        {bottomTabs.map(({ key, label, icon: Icon, badge, gradient }) => {
           const isActive = activeTab === key;
           return (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all"
+              className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all z-10"
             >
               {isActive && (
                 <motion.div
@@ -147,22 +170,30 @@ const Index = () => {
                 />
               )}
               <div className="relative">
-                <Icon
-                  className={`w-5 h-5 transition-all relative z-10 ${
-                    isActive ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                  fill={isActive ? 'currentColor' : 'none'}
-                  strokeWidth={isActive ? 2.5 : 1.5}
-                />
+                {gradient && isActive ? (
+                  <div className="w-5 h-5 relative z-10">
+                    <div className="w-full h-full bg-gradient-brand rounded-md flex items-center justify-center glow-xs">
+                      <Icon className="w-3.5 h-3.5 text-primary-foreground" />
+                    </div>
+                  </div>
+                ) : (
+                  <Icon
+                    className={`w-5 h-5 transition-all relative z-10 ${
+                      isActive ? 'text-primary' : gradient ? 'text-primary/70' : 'text-muted-foreground'
+                    }`}
+                    fill={isActive && !gradient ? 'currentColor' : 'none'}
+                    strokeWidth={isActive ? 2.5 : 1.5}
+                  />
+                )}
                 {badge && badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-white px-1 z-20">
+                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground px-1 z-20">
                     {badge}
                   </span>
                 )}
               </div>
               <span
                 className={`text-[10px] font-medium transition-all relative z-10 ${
-                  isActive ? 'text-primary' : 'text-muted-foreground'
+                  isActive ? (gradient ? 'text-gradient font-bold' : 'text-primary') : 'text-muted-foreground'
                 }`}
               >
                 {label}

@@ -171,9 +171,9 @@ const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
                 placeholder="Adicione um comentário..."
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
               />
-              <button className="text-primary text-sm font-semibold disabled:opacity-40 transition-opacity" disabled={!comment.trim()}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" disabled={!comment.trim()}>
                 <Send className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </motion.div>
         )}

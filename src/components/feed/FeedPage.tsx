@@ -297,11 +297,9 @@ export function FeedPage() {
               <TrendingUp className="w-3 h-3 text-primary" /> 5 novos posts
             </p>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="px-2.5 py-1 rounded-xl bg-destructive/15 text-destructive text-[10px] font-bold flex items-center gap-1">
-              <Flame className="w-3 h-3" /> Em alta
-            </span>
-          </div>
+          <Badge variant="destructive" className="gap-1">
+            <Flame className="w-3 h-3" /> Em alta
+          </Badge>
         </motion.div>
 
         <StoriesBar />

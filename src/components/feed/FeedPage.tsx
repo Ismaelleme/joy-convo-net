@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send, Image as ImageIcon, Smile, MapPin, TrendingUp, Flame } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { feedPosts, type FeedPost } from '@/data/feedData';
 import { UserAvatar } from '@/components/chat/UserAvatar';
 
@@ -41,7 +46,7 @@ const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="glass glass-border rounded-2xl overflow-hidden hover:glass-border-bright transition-all duration-300"
+      className="overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center gap-3 p-4">
@@ -58,9 +63,9 @@ const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
             </p>
           )}
         </div>
-        <button className="p-1.5 rounded-xl hover:bg-muted/50 transition-colors">
+        <Button variant="ghost" size="icon" className="h-8 w-8">
           <MoreHorizontal className="w-5 h-5 text-muted-foreground" />
-        </button>
+        </Button>
       </div>
 
       {/* Content */}
@@ -166,9 +171,9 @@ const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
                 placeholder="Adicione um comentário..."
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
               />
-              <button className="text-primary text-sm font-semibold disabled:opacity-40 transition-opacity" disabled={!comment.trim()}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" disabled={!comment.trim()}>
                 <Send className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </motion.div>
         )}
@@ -218,13 +223,11 @@ const CreatePost = () => {
                     <MapPin className="w-5 h-5 text-primary" />
                   </button>
                 </div>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  className="px-5 py-2 bg-gradient-brand text-primary-foreground text-xs font-semibold rounded-xl hover:brightness-110 transition-all glow-sm disabled:opacity-40"
-                  disabled={!content.trim()}
-                >
+                <motion.div whileTap={{ scale: 0.95 }}>
+                <Button size="sm" disabled={!content.trim()} className="rounded-xl">
                   Publicar
-                </motion.button>
+                </Button>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -294,11 +297,9 @@ export function FeedPage() {
               <TrendingUp className="w-3 h-3 text-primary" /> 5 novos posts
             </p>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="px-2.5 py-1 rounded-xl bg-destructive/15 text-destructive text-[10px] font-bold flex items-center gap-1">
-              <Flame className="w-3 h-3" /> Em alta
-            </span>
-          </div>
+          <Badge variant="destructive" className="gap-1">
+            <Flame className="w-3 h-3" /> Em alta
+          </Badge>
         </motion.div>
 
         <StoriesBar />

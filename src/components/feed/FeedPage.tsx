@@ -227,7 +227,7 @@ const CreatePost = () => {
                 <Button size="sm" disabled={!content.trim()} className="rounded-xl">
                   Publicar
                 </Button>
-                </motion.button>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>

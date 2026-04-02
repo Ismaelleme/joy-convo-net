@@ -223,12 +223,10 @@ const CreatePost = () => {
                     <MapPin className="w-5 h-5 text-primary" />
                   </button>
                 </div>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  className="px-5 py-2 bg-gradient-brand text-primary-foreground text-xs font-semibold rounded-xl hover:brightness-110 transition-all glow-sm disabled:opacity-40"
-                  disabled={!content.trim()}
-                >
+                <motion.div whileTap={{ scale: 0.95 }}>
+                <Button size="sm" disabled={!content.trim()} className="rounded-xl">
                   Publicar
+                </Button>
                 </motion.button>
               </motion.div>
             )}

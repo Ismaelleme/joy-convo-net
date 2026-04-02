@@ -63,9 +63,9 @@ const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
             </p>
           )}
         </div>
-        <button className="p-1.5 rounded-xl hover:bg-muted/50 transition-colors">
+        <Button variant="ghost" size="icon" className="h-8 w-8">
           <MoreHorizontal className="w-5 h-5 text-muted-foreground" />
-        </button>
+        </Button>
       </div>
 
       {/* Content */}

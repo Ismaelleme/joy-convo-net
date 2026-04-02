@@ -46,7 +46,7 @@ const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="glass glass-border rounded-2xl overflow-hidden hover:glass-border-bright transition-all duration-300"
+      className="overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center gap-3 p-4">

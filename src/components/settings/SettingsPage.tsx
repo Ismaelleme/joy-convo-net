@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { backgroundPatterns } from '@/data/adminData';
 import { toast } from 'sonner';
+import { ThemeCustomizer } from './ThemeCustomizer';
 
 interface SettingItemProps {
   icon: React.ElementType;
@@ -42,7 +43,7 @@ const SettingItem = ({ icon: Icon, label, description, onClick, trailing, destru
   </button>
 );
 
-type SettingsView = 'main' | 'appearance' | 'notifications' | 'privacy' | 'profile';
+type SettingsView = 'main' | 'appearance' | 'notifications' | 'privacy' | 'profile' | 'theme';
 
 export function SettingsPage() {
   const [view, setView] = useState<SettingsView>('main');
@@ -69,6 +70,10 @@ export function SettingsPage() {
       ← Voltar
     </Button>
   );
+
+  if (view === 'theme') {
+    return <ThemeCustomizer onBack={() => setView('main')} />;
+  }
 
   if (view === 'profile') {
     return (
@@ -283,7 +288,7 @@ export function SettingsPage() {
 
         <Card>
           <CardContent className="p-0 divide-y divide-border/50">
-            <SettingItem icon={Palette} label="Aparência" description="Tema, cores e padrões" onClick={() => setView('appearance')} />
+            <SettingItem icon={Palette} label="Personalizar Cores" description="Escolha as cores do seu app" onClick={() => setView('theme')} />
             <SettingItem icon={Bell} label="Notificações" description="Sons, pré-visualização" onClick={() => setView('notifications')} />
             <SettingItem icon={Lock} label="Privacidade" description="Leitura, status" onClick={() => setView('privacy')} />
           </CardContent>

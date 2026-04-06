@@ -40,20 +40,25 @@ const Index = () => {
     { key: 'marketplace', label: 'Loja', icon: ShoppingBag },
   ];
 
+  const handleTabChange = (key: Tab) => {
+    setActiveTab(key);
+  };
+
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background bg-noise">
       {/* Top bar */}
       <header className="flex items-center justify-between px-4 py-2.5 glass-strong glass-border flex-shrink-0 z-20 relative">
-        <div className="absolute inset-0 bg-gradient-mesh opacity-30 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-mesh opacity-20 pointer-events-none" />
         <h1 className="text-lg font-bold text-gradient tracking-tight relative z-10">iSync</h1>
         <div className="flex items-center gap-0.5 relative z-10">
           {topTabs.map(({ key, label, icon: Icon }) => {
             const isActive = activeTab === key;
             return (
-              <button
+              <motion.button
                 key={key}
-                onClick={() => setActiveTab(key)}
-                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                onClick={() => handleTabChange(key)}
+                whileTap={{ scale: 0.92 }}
+                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 ${
                   isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
                 }`}
               >
@@ -66,17 +71,17 @@ const Index = () => {
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   />
                 )}
-              </button>
+              </motion.button>
             );
           })}
           <div className="w-px h-5 bg-border/50 mx-1" />
-          <button className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all">
-            <Search className="w-4.5 h-4.5" />
-          </button>
-          <button className="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all">
-            <Bell className="w-4.5 h-4.5" />
+          <motion.button whileTap={{ scale: 0.85 }} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all">
+            <Search className="w-4 h-4" />
+          </motion.button>
+          <motion.button whileTap={{ scale: 0.85 }} className="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all">
+            <Bell className="w-4 h-4" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-destructive pulse-ring" />
-          </button>
+          </motion.button>
         </div>
       </header>
 
@@ -85,10 +90,10 @@ const Index = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
+            initial={{ opacity: 0, x: 8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -8 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
             className="w-full h-full flex"
           >
             {activeTab === 'feed' && <FeedPage />}
@@ -109,13 +114,9 @@ const Index = () => {
             )}
 
             {activeTab === 'ai' && <AIAssistantPage />}
-
             {activeTab === 'communities' && <CommunitiesPage />}
-
             {activeTab === 'contacts' && <ContactsPage />}
-
             {activeTab === 'schedule' && <SchedulePage />}
-
             {activeTab === 'settings' && <SettingsPage />}
 
             {activeTab === 'explore' && (
@@ -126,8 +127,9 @@ const Index = () => {
                     { key: 'status' as const, label: 'Stories', icon: Circle },
                     { key: 'calls' as const, label: 'Chamadas', icon: PhoneCall },
                   ]).map(({ key, label, icon: Icon }) => (
-                    <button
+                    <motion.button
                       key={key}
+                      whileTap={{ scale: 0.93 }}
                       onClick={() => setExploreSubTab(key)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
                         exploreSubTab === key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
@@ -135,7 +137,7 @@ const Index = () => {
                     >
                       <Icon className="w-3.5 h-3.5" />
                       {label}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
                 <div className="flex-1 overflow-hidden">
@@ -153,13 +155,14 @@ const Index = () => {
 
       {/* Bottom navigation */}
       <nav className="glass-strong glass-border flex items-center justify-around px-2 py-2 flex-shrink-0 relative z-30">
-        <div className="absolute inset-0 bg-gradient-mesh opacity-20 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-mesh opacity-15 pointer-events-none" />
         {bottomTabs.map(({ key, label, icon: Icon, badge, gradient }) => {
           const isActive = activeTab === key;
           return (
-            <button
+            <motion.button
               key={key}
-              onClick={() => setActiveTab(key)}
+              onClick={() => handleTabChange(key)}
+              whileTap={{ scale: 0.88 }}
               className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all z-10"
             >
               {isActive && (
@@ -198,7 +201,7 @@ const Index = () => {
               >
                 {label}
               </span>
-            </button>
+            </motion.button>
           );
         })}
       </nav>

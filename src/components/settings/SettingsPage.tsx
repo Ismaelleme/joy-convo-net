@@ -177,16 +177,22 @@ export function SettingsPage() {
 
           <div>
             <Label className="text-xs uppercase tracking-wider">Cor de Destaque</Label>
-            <div className="flex gap-3 mt-3">
+            <div className="flex flex-wrap gap-2.5 mt-3">
               {colors.map((color) => {
                 const isSelected = accentColor === color.value;
                 return (
-                  <button key={color.value} onClick={() => setAccentColor(color.value)} className="flex flex-col items-center gap-1">
-                    <div className={`w-10 h-10 rounded-xl border-2 transition-all ${
+                  <motion.button key={color.value} whileTap={{ scale: 0.85 }} onClick={() => setAccentColor(color.value)} className="flex flex-col items-center gap-1">
+                    <div className={`w-9 h-9 rounded-xl border-2 transition-all ${
                       isSelected ? 'border-foreground scale-110 shadow-md' : 'border-transparent hover:scale-105'
-                    }`} style={{ backgroundColor: color.value }} />
+                    }`} style={{ backgroundColor: color.value }}>
+                      {isSelected && (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Check className="w-3.5 h-3.5 text-white drop-shadow-md" />
+                        </div>
+                      )}
+                    </div>
                     <span className="text-[9px] text-muted-foreground">{color.name}</span>
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>

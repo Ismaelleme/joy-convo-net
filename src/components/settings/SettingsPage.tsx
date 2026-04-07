@@ -58,11 +58,18 @@ export function SettingsPage() {
   const [accentColor, setAccentColor] = useState('#3b82f6');
 
   const colors = [
-    { name: 'Azul', value: '#3b82f6' },
-    { name: 'Ciano', value: '#06b6d4' },
     { name: 'Violeta', value: '#8b5cf6' },
-    { name: 'Indigo', value: '#4f46e5' },
+    { name: 'Azul', value: '#3b82f6' },
+    { name: 'Índigo', value: '#6366f1' },
+    { name: 'Ciano', value: '#06b6d4' },
+    { name: 'Teal', value: '#14b8a6' },
     { name: 'Esmeralda', value: '#10b981' },
+    { name: 'Verde', value: '#22c55e' },
+    { name: 'Âmbar', value: '#f59e0b' },
+    { name: 'Laranja', value: '#f97316' },
+    { name: 'Rosa', value: '#ec4899' },
+    { name: 'Magenta', value: '#d946ef' },
+    { name: 'Vermelho', value: '#ef4444' },
   ];
 
   const BackButton = () => (

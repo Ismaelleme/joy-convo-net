@@ -1,19 +1,26 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CallsService } from './calls.service';
-import { CreateCallDto } from './dto/create-call.dto';
-import { EndCallDto } from './dto/end-call.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
+@ApiTags('Calls')
 @Controller('calls')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class CallsController {
   constructor(private readonly callsService: CallsService) {}
 
   @Post()
-  create(@Body() dto: CreateCallDto) {
-    return this.callsService.createCall(dto);
+  create(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: { calleeId: string; type: 'VOICE' | 'VIDEO' },
+  ) {
+    return this.callsService.createCall(userId, dto.calleeId, dto.type);
   }
 
-  @Get('user/:userId')
-  listByUser(@Param('userId') userId: string) {
+  @Get()
+  list(@CurrentUser('sub') userId: string) {
     return this.callsService.listByUser(userId);
   }
 
@@ -23,7 +30,7 @@ export class CallsController {
   }
 
   @Patch(':callId/end')
-  end(@Param('callId') callId: string, @Body() dto: EndCallDto) {
-    return this.callsService.endCall(callId, dto);
+  end(@Param('callId') callId: string, @Body('reason') reason?: 'ENDED' | 'MISSED' | 'DECLINED') {
+    return this.callsService.endCall(callId, reason);
   }
 }

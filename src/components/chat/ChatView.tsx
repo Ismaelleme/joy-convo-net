@@ -7,6 +7,7 @@ import { TypingIndicator } from './TypingIndicator';
 import { Message } from '@/types/chat';
 import { ArrowLeft, Phone, Video, Search, Star, Archive, Users, Pin, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 export function ChatView() {
   const {
@@ -79,10 +80,10 @@ export function ChatView() {
           <button onClick={() => setShowSearch(!showSearch)} className="p-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted/50 transition-all">
             <Search className="w-5 h-5" />
           </button>
-          <button className="p-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted/50 transition-all">
+          <button onClick={() => toast.info(`Ligando para ${chat.name}...`)} className="p-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted/50 transition-all">
             <Phone className="w-5 h-5" />
           </button>
-          <button className="p-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted/50 transition-all">
+          <button onClick={() => toast.info(`Chamada de vídeo com ${chat.name}...`)} className="p-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted/50 transition-all">
             <Video className="w-5 h-5" />
           </button>
         </div>

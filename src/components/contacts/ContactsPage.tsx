@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Star, Phone, Mail, Video, ExternalLink, UserPlus, X, Circle, Clock, Ban, MessageCircle, ChevronRight } from 'lucide-react';
+import { toast } from 'sonner';
 import { contacts, contactCategories, type Contact } from '@/data/contactsData';
 import { UserAvatar } from '@/components/chat/UserAvatar';
 import { formatDistanceToNow } from 'date-fns';
@@ -94,11 +95,11 @@ const ContactDetail = ({ contact, onClose }: { contact: Contact; onClose: () => 
         {/* Quick actions */}
         <div className="grid grid-cols-3 gap-2 mt-5">
           {[
-            { icon: Phone, label: 'Ligar' },
-            { icon: Video, label: 'Vídeo' },
-            { icon: Mail, label: 'Mensagem' },
-          ].map(({ icon: Icon, label }) => (
-            <button key={label} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl glass glass-border hover:glow-xs transition-all">
+            { icon: Phone, label: 'Ligar', action: () => toast.info(`Ligando para ${contact.name}...`) },
+            { icon: Video, label: 'Vídeo', action: () => toast.info(`Chamada de vídeo para ${contact.name}...`) },
+            { icon: Mail, label: 'Mensagem', action: () => toast.info(`Abrindo chat com ${contact.name}...`) },
+          ].map(({ icon: Icon, label, action }) => (
+            <button key={label} onClick={action} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl glass glass-border hover:glow-xs transition-all">
               <Icon className="w-5 h-5 text-primary" />
               <span className="text-[11px] font-medium text-foreground">{label}</span>
             </button>
@@ -181,7 +182,7 @@ export function ContactsPage() {
                 <span className="text-online font-medium">{onlineCount} online</span> · {contacts.length} total
               </p>
             </div>
-            <button className="w-10 h-10 rounded-2xl glass glass-border flex items-center justify-center hover:glow-xs transition-all">
+            <button onClick={() => toast.info('Adicionar contato em breve!')} className="w-10 h-10 rounded-2xl glass glass-border flex items-center justify-center hover:glow-xs transition-all">
               <UserPlus className="w-5 h-5 text-primary" />
             </button>
           </motion.div>

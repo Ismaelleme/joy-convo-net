@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Video, PhoneIncoming, PhoneOutgoing, PhoneMissed, Search, PhoneCall } from 'lucide-react';
+import { toast } from 'sonner';
 import { callRecords, type CallRecord } from '@/data/callsData';
 
 function formatDuration(secs: number) {
@@ -52,7 +53,7 @@ const CallItem = ({ call }: { call: CallRecord }) => {
           )}
         </div>
       </div>
-      <button className="p-2 rounded-xl hover:bg-muted/50 transition-colors">
+      <button onClick={() => toast.info(`${call.type === 'video' ? 'Chamada de vídeo' : 'Ligando'} para ${call.userName}...`)} className="p-2 rounded-xl hover:bg-muted/50 transition-colors">
         {call.type === 'video' ? (
           <Video className="w-5 h-5 text-primary" />
         ) : (

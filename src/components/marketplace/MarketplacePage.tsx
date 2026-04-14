@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, MapPin, Heart, Tag, Filter, ShoppingBag } from 'lucide-react';
+import { toast } from 'sonner';
 import { products, categories, type Product } from '@/data/marketplaceData';
 
 function formatPrice(price: number) {
@@ -72,7 +73,7 @@ export function MarketplacePage() {
             <ShoppingBag className="w-5 h-5 text-primary" />
             Marketplace
           </h1>
-          <button className="px-3 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-xl hover:bg-primary/90 transition-colors">
+          <button onClick={() => toast.info('Criar anúncio em breve!')} className="px-3 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-xl hover:bg-primary/90 transition-colors">
             Vender
           </button>
         </div>

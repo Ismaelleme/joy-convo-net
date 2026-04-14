@@ -8,8 +8,17 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
 
-  app.enableCors({ origin: '*' });
+  // CORS
+  const corsOrigin = config.get('CORS_ORIGIN', '*');
+  app.enableCors({
+    origin: corsOrigin === '*' ? true : corsOrigin.split(','),
+    credentials: true,
+  });
 
+  // Global prefix
+  app.setGlobalPrefix('api');
+
+  // Validation
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -20,8 +29,8 @@ async function bootstrap() {
 
   // Swagger
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('JoyConvo API')
-    .setDescription('Backend completo do JoyConvo')
+    .setTitle('iSync API')
+    .setDescription('API completa do iSync — Chat, Feed, Agenda, Comunidades, Marketplace, IA e mais')
     .setVersion('2.0')
     .addBearerAuth()
     .build();

@@ -309,22 +309,22 @@ export function SettingsPage() {
 
         <Card>
           <CardContent className="p-0 divide-y divide-border/50">
-            <SettingItem icon={Smartphone} label="Dispositivos Conectados" description="Gerencie seus dispositivos" />
-            <SettingItem icon={Globe} label="Idioma" description="Português (BR)" />
-            <SettingItem icon={HelpCircle} label="Ajuda e Suporte" description="FAQ, fale conosco" />
-            <SettingItem icon={Info} label="Sobre" description="iSync v1.0.0" />
+            <SettingItem icon={Smartphone} label="Dispositivos Conectados" description="Gerencie seus dispositivos" onClick={() => toast.info('Em breve!')} />
+            <SettingItem icon={Globe} label="Idioma" description="Português (BR)" onClick={() => toast.info('Em breve!')} />
+            <SettingItem icon={HelpCircle} label="Ajuda e Suporte" description="FAQ, fale conosco" onClick={() => toast.info('Em breve!')} />
+            <SettingItem icon={Info} label="Sobre" description="iSync v1.0.0" onClick={() => toast.info('iSync v1.0.0 — Feito com 💙')} />
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-0">
-            <SettingItem icon={Star} label="iSync Premium" description="Desbloqueie recursos exclusivos" />
+            <SettingItem icon={Star} label="iSync Premium" description="Desbloqueie recursos exclusivos" onClick={() => toast.info('Premium chegando em breve! ⭐')} />
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-0">
-            <SettingItem icon={LogOut} label="Sair da Conta" destructive />
+            <SettingItem icon={LogOut} label="Sair da Conta" destructive onClick={() => toast.success('Desconectado com sucesso!')} />
           </CardContent>
         </Card>
 

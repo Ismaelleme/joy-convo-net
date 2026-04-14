@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { hash } from 'bcrypt';
 
+// Updated seed for iSync v2
+
 const prisma = new PrismaClient();
 
 async function main() {

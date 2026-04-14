@@ -76,10 +76,10 @@ const Index = () => {
             );
           })}
           <div className="w-px h-5 bg-border/50 mx-1" />
-          <motion.button whileTap={{ scale: 0.85 }} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all">
+          <motion.button whileTap={{ scale: 0.85 }} onClick={() => toast.info('Busca em breve!')} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all">
             <Search className="w-4 h-4" />
           </motion.button>
-          <motion.button whileTap={{ scale: 0.85 }} className="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all">
+          <motion.button whileTap={{ scale: 0.85 }} onClick={() => toast.info('Notificações em breve!')} className="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all">
             <Bell className="w-4 h-4" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-destructive pulse-ring" />
           </motion.button>

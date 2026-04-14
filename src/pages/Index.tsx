@@ -17,6 +17,7 @@ import {
   PhoneCall, Contact2, CalendarDays, Settings, Bell, Search, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 type Tab = 'feed' | 'chat' | 'ai' | 'contacts' | 'schedule' | 'settings' | 'communities' | 'explore' | 'marketplace';
 

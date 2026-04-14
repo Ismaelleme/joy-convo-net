@@ -129,11 +129,11 @@ const ContactDetail = ({ contact, onClose }: { contact: Contact; onClose: () => 
             <div className="glass glass-border rounded-2xl p-4">
               <p className="text-[10px] uppercase text-muted-foreground tracking-wider font-semibold mb-2">Redes Sociais</p>
               <div className="flex flex-wrap gap-2">
-                {contact.socialLinks.map((link) => (
-                  <button key={link.platform} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass glass-border text-xs text-foreground hover:glow-xs transition-all">
-                    <ExternalLink className="w-3 h-3 text-primary" />
-                    {link.platform}
-                  </button>
+                  {contact.socialLinks.map((link) => (
+                    <button key={link.platform} onClick={() => toast.info(`Abrindo ${link.platform}...`)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass glass-border text-xs text-foreground hover:glow-xs transition-all">
+                      <ExternalLink className="w-3 h-3 text-primary" />
+                      {link.platform}
+                    </button>
                 ))}
               </div>
             </div>

@@ -18,6 +18,9 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { CallModal } from '@/components/calls/CallModal';
+import { NotificationsPopover } from '@/components/notifications/NotificationsPopover';
+import { useCallStore } from '@/store/callStore';
 
 type Tab = 'feed' | 'chat' | 'ai' | 'contacts' | 'schedule' | 'settings' | 'communities' | 'explore' | 'marketplace';
 
@@ -25,6 +28,9 @@ const Index = () => {
   const { activeChatId, showMobileSidebar } = useChatStore();
   const [activeTab, setActiveTab] = useState<Tab>('feed');
   const [exploreSubTab, setExploreSubTab] = useState<'videos' | 'status' | 'calls'>('videos');
+  const [notifOpen, setNotifOpen] = useState(false);
+  const unreadCount = useCallStore((s) => s.notifications.filter((n) => !n.read).length);
+  const markAllRead = useCallStore((s) => s.markAllRead);
 
   const bottomTabs: { key: Tab; label: string; icon: React.ElementType; badge?: number; gradient?: boolean }[] = [
     { key: 'feed', label: 'Feed', icon: Home },
@@ -79,12 +85,28 @@ const Index = () => {
           <motion.button whileTap={{ scale: 0.85 }} onClick={() => toast.info('Busca em breve!')} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all">
             <Search className="w-4 h-4" />
           </motion.button>
-          <motion.button whileTap={{ scale: 0.85 }} onClick={() => toast.info('Notificações em breve!')} className="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all">
+          <motion.button
+            whileTap={{ scale: 0.85 }}
+            onClick={() => {
+              setNotifOpen((o) => {
+                const next = !o;
+                if (next) markAllRead();
+                return next;
+              });
+            }}
+            className="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all"
+          >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-destructive pulse-ring" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
+                {unreadCount}
+              </span>
+            )}
           </motion.button>
+          <NotificationsPopover open={notifOpen} onClose={() => setNotifOpen(false)} />
         </div>
       </header>
+      <CallModal />
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden relative">

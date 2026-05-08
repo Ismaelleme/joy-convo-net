@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Video, PhoneIncoming, PhoneOutgoing, PhoneMissed, Search, PhoneCall } from 'lucide-react';
-import { toast } from 'sonner';
 import { callRecords, type CallRecord } from '@/data/callsData';
+import { useCallStore } from '@/store/callStore';
 
 function formatDuration(secs: number) {
   const m = Math.floor(secs / 60);
@@ -28,6 +28,7 @@ const dirIcons = {
 const CallItem = ({ call }: { call: CallRecord }) => {
   const DirIcon = dirIcons[call.direction];
   const isMissed = call.direction === 'missed';
+  const startCall = useCallStore((s) => s.startCall);
 
   return (
     <motion.div
@@ -53,7 +54,7 @@ const CallItem = ({ call }: { call: CallRecord }) => {
           )}
         </div>
       </div>
-      <button onClick={() => toast.info(`${call.type === 'video' ? 'Chamada de vídeo' : 'Ligando'} para ${call.userName}...`)} className="p-2 rounded-xl hover:bg-muted/50 transition-colors">
+      <button onClick={(e) => { e.stopPropagation(); startCall(call.userName, call.type); }} className="p-2 rounded-xl hover:bg-muted/50 transition-colors">
         {call.type === 'video' ? (
           <Video className="w-5 h-5 text-primary" />
         ) : (

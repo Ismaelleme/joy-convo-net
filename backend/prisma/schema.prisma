@@ -69,15 +69,16 @@ enum NotificationType {
 // ─── User ────────────────────────────────────────────
 
 model User {
-  id           String     @id @default(uuid())
-  email        String     @unique
-  name         String
-  passwordHash String
-  avatar       String?
-  bio          String?
-  phone        String?
-  status       UserStatus @default(OFFLINE)
-  lastSeenAt   DateTime?
+  id            String     @id @default(uuid())
+  email         String     @unique
+  name          String
+  passwordHash  String
+  avatar        String?
+  bio           String?
+  phone         String?    @unique
+  phoneVerified Boolean    @default(false)
+  status        UserStatus @default(OFFLINE)
+  lastSeenAt    DateTime?
 
   // Relations
   sentMessages     Message[]       @relation("SentMessages")

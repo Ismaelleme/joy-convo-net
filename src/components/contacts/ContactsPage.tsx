@@ -17,35 +17,55 @@ const statusConfig = {
 
 const ContactCard = ({ contact, onSelect, index }: { contact: Contact; onSelect: (c: Contact) => void; index: number }) => {
   const statusCfg = statusConfig[contact.status];
+  const startCall = useCallStore((s) => s.startCall);
 
   return (
-    <motion.button
+    <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.03 }}
-      onClick={() => onSelect(contact)}
       className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-muted/30 hover:glass-border-bright transition-all text-left group"
     >
-      <div className="relative">
-        <UserAvatar name={contact.name} size="md" />
-        <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background ${statusCfg.color}`} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <p className="text-sm font-semibold text-foreground truncate">{contact.name}</p>
-          {contact.isFavorite && <Star className="w-3 h-3 text-amber-400 fill-amber-400 flex-shrink-0" />}
+      <button
+        onClick={() => onSelect(contact)}
+        className="flex items-center gap-3 flex-1 min-w-0 text-left"
+      >
+        <div className="relative">
+          <UserAvatar name={contact.name} size="md" />
+          <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background ${statusCfg.color}`} />
         </div>
-        <p className="text-xs text-muted-foreground truncate">{contact.bio || contact.phone}</p>
-      </div>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-primary/15 transition-colors">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-semibold text-foreground truncate">{contact.name}</p>
+            {contact.isFavorite && <Star className="w-3 h-3 text-amber-400 fill-amber-400 flex-shrink-0" />}
+          </div>
+          <p className="text-xs text-muted-foreground truncate">{contact.bio || contact.phone}</p>
+        </div>
+      </button>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={(e) => { e.stopPropagation(); startCall(contact.name, 'voice'); }}
+          title="Ligar"
+          className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-primary/15 transition-colors"
+        >
           <Phone className="w-4 h-4 text-primary" />
-        </div>
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-primary/15 transition-colors">
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); startCall(contact.name, 'video'); }}
+          title="Vídeo"
+          className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-primary/15 transition-colors"
+        >
+          <Video className="w-4 h-4 text-primary" />
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); toast.info(`Abrindo chat com ${contact.name}...`); }}
+          title="Mensagem"
+          className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-primary/15 transition-colors hidden sm:flex"
+        >
           <MessageCircle className="w-4 h-4 text-primary" />
-        </div>
+        </button>
       </div>
-    </motion.button>
+    </motion.div>
   );
 };
 

@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsString, Matches, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDto {
@@ -16,8 +16,12 @@ export class RegisterDto {
   @MinLength(8)
   password!: string;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
+  @ApiProperty({ example: '+5511999999999' })
   @IsString()
-  phone?: string;
+  @Matches(/^\+\d{8,15}$/, { message: 'Telefone deve estar em E.164.' })
+  phone!: string;
+
+  @ApiProperty({ description: 'Token retornado por /auth/verify-code' })
+  @IsString()
+  verificationToken!: string;
 }

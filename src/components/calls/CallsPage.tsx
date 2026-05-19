@@ -54,7 +54,7 @@ const CallItem = ({ call }: { call: CallRecord }) => {
           )}
         </div>
       </div>
-      <button onClick={(e) => { e.stopPropagation(); startCall(call.userName, call.type); }} className="p-2 rounded-xl hover:bg-muted/50 transition-colors">
+      <button onClick={(e) => { e.stopPropagation(); startCall(call.userName, call.type).catch(() => {}); }} className="p-2 rounded-xl hover:bg-muted/50 transition-colors">
         {call.type === 'video' ? (
           <Video className="w-5 h-5 text-primary" />
         ) : (

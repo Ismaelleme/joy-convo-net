@@ -44,14 +44,24 @@ const ContactCard = ({ contact, onSelect, index }: { contact: Contact; onSelect:
       </button>
       <div className="flex items-center gap-1">
         <button
-          onClick={(e) => { e.stopPropagation(); startCall(contact.name, 'voice'); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            startCall(contact.name, 'voice', contact.id).catch(() =>
+              toast.error('Não foi possível acessar o microfone'),
+            );
+          }}
           title="Ligar"
           className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-primary/15 transition-colors"
         >
           <Phone className="w-4 h-4 text-primary" />
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); startCall(contact.name, 'video'); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            startCall(contact.name, 'video', contact.id).catch(() =>
+              toast.error('Não foi possível acessar a câmera'),
+            );
+          }}
           title="Vídeo"
           className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-primary/15 transition-colors"
         >
@@ -116,8 +126,8 @@ const ContactDetail = ({ contact, onClose }: { contact: Contact; onClose: () => 
         {/* Quick actions */}
         <div className="grid grid-cols-3 gap-2 mt-5">
           {[
-            { icon: Phone, label: 'Ligar', action: () => useCallStore.getState().startCall(contact.name, 'voice') },
-            { icon: Video, label: 'Vídeo', action: () => useCallStore.getState().startCall(contact.name, 'video') },
+            { icon: Phone, label: 'Ligar', action: () => useCallStore.getState().startCall(contact.name, 'voice', contact.id).catch(() => toast.error('Sem acesso ao microfone')) },
+            { icon: Video, label: 'Vídeo', action: () => useCallStore.getState().startCall(contact.name, 'video', contact.id).catch(() => toast.error('Sem acesso à câmera')) },
             { icon: Mail, label: 'Mensagem', action: () => toast.info(`Abrindo chat com ${contact.name}...`) },
           ].map(({ icon: Icon, label, action }) => (
             <button key={label} onClick={action} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl glass glass-border hover:glow-xs transition-all">

@@ -19,6 +19,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { CallModal } from '@/components/calls/CallModal';
+import { IncomingCallListener } from '@/components/calls/IncomingCallSheet';
 import { NotificationsPopover } from '@/components/notifications/NotificationsPopover';
 import { useCallStore } from '@/store/callStore';
 
@@ -107,6 +108,7 @@ const Index = () => {
         </div>
       </header>
       <CallModal />
+      <IncomingCallListener />
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden relative">

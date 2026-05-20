@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, PhoneOff, Video, Mic, MicOff, VideoOff, Volume2, VolumeX } from 'lucide-react';
+import { Phone, PhoneOff, Video, Mic, MicOff, VideoOff, Volume2, VolumeX, MonitorUp, MonitorOff } from 'lucide-react';
 import { useCallStore } from '@/store/callStore';
 import { toast } from 'sonner';
 
@@ -15,7 +15,9 @@ export function CallModal() {
   const [muted, setMuted] = useState(false);
   const [videoOff, setVideoOff] = useState(false);
   const [speaker, setSpeaker] = useState(true);
+  const [sharing, setSharing] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -105,11 +107,29 @@ export function CallModal() {
     if (remoteAudioRef.current) remoteAudioRef.current.muted = !next;
   };
 
+  const handleToggleShare = async () => {
+    if (!session) return;
+    if (sharing) {
+      await session.stopScreenShare();
+      setSharing(false);
+      toast.info('Compartilhamento encerrado');
+    } else {
+      const ok = await session.startScreenShare();
+      if (ok) {
+        setSharing(true);
+        toast.success('Compartilhando tela');
+      } else {
+        toast.error('Não foi possível compartilhar a tela');
+      }
+    }
+  };
+
   const handleEnd = () => {
     const wasInCall = active.status === 'in-call';
     endCall();
     toast.info(wasInCall ? `Chamada encerrada (${fmt(elapsed)})` : 'Chamada cancelada');
   };
+
 
   const hasRemoteVideo = !!remoteStream && remoteStream.getVideoTracks().length > 0;
 
@@ -218,6 +238,17 @@ export function CallModal() {
             </button>
 
             <button
+              onClick={handleToggleShare}
+              disabled={active.status !== 'in-call'}
+              title="Compartilhar tela"
+              className={`w-14 h-14 rounded-full flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                sharing ? 'bg-primary text-primary-foreground' : 'glass glass-border text-foreground'
+              }`}
+            >
+              {sharing ? <MonitorOff className="w-5 h-5" /> : <MonitorUp className="w-5 h-5" />}
+            </button>
+
+            <button
               onClick={handleEnd}
               className="w-16 h-16 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:scale-105 transition-transform glow-lg"
             >
@@ -229,3 +260,4 @@ export function CallModal() {
     </AnimatePresence>
   );
 }
+

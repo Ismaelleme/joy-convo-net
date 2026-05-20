@@ -254,16 +254,8 @@ export function SettingsPage() {
         <h1 className="text-xl font-bold text-foreground">Configurações</h1>
 
         {/* Profile card */}
-        <Card className="cursor-pointer hover:bg-accent/50 transition-all" onClick={() => setView('profile')}>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-xl font-bold text-primary-foreground shadow-md">V</div>
-            <div className="flex-1 min-w-0">
-              <p className="text-base font-bold text-foreground">Você</p>
-              <p className="text-xs text-muted-foreground">Olá! Estou usando o iSync 🚀</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </CardContent>
-        </Card>
+        <ProfileSummaryCard onClick={() => setView('profile')} />
+
 
         <Card>
           <CardContent className="p-0 divide-y divide-border/50">

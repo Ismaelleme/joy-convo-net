@@ -1,17 +1,18 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send, Image as ImageIcon, Smile, MapPin, TrendingUp, Flame } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send, Image as ImageIcon, Smile, MapPin, TrendingUp, Flame, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { feedPosts, type FeedPost } from '@/data/feedData';
+import { useFeedStore } from '@/store/feedStore';
+import { useProfileStore } from '@/store/profileStore';
 import { UserAvatar } from '@/components/chat/UserAvatar';
+import { toast } from 'sonner';
+import type { FeedPost } from '@/data/feedData';
 
 function timeAgo(date: Date): string {
   const diff = Date.now() - date.getTime();
   const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'agora';
   if (mins < 60) return `${mins}m`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h`;
@@ -19,36 +20,32 @@ function timeAgo(date: Date): string {
 }
 
 const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
-  const [liked, setLiked] = useState(post.liked);
-  const [likes, setLikes] = useState(post.likes);
-  const [saved, setSaved] = useState(post.saved);
+  const { toggleLike, toggleSave, sharePost, addComment } = useFeedStore();
+  const me = useProfileStore((s) => s.profile);
   const [showComments, setShowComments] = useState(false);
   const [showHeart, setShowHeart] = useState(false);
   const [comment, setComment] = useState('');
   const [imageIndex, setImageIndex] = useState(0);
 
-  const handleLike = () => {
-    setLiked(!liked);
-    setLikes(liked ? likes - 1 : likes + 1);
-  };
-
   const handleDoubleTap = () => {
-    if (!liked) {
-      setLiked(true);
-      setLikes(l => l + 1);
-    }
+    if (!post.liked) toggleLike(post.id);
     setShowHeart(true);
     setTimeout(() => setShowHeart(false), 800);
+  };
+
+  const submitComment = () => {
+    if (!comment.trim()) return;
+    addComment(post.id, me.name || 'Você', comment.trim());
+    setComment('');
   };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
+      transition={{ delay: Math.min(index * 0.04, 0.4) }}
       className="overflow-hidden"
     >
-      {/* Header */}
       <div className="flex items-center gap-3 p-4">
         <UserAvatar user={{ id: post.userId, name: post.userName, avatar: post.userAvatar, status: 'online' as const }} size="sm" showStatus />
         <div className="flex-1 min-w-0">
@@ -57,31 +54,19 @@ const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
             <span className="w-1 h-1 rounded-full bg-muted-foreground" />
             <p className="text-[11px] text-muted-foreground">{timeAgo(post.timestamp)}</p>
           </div>
-          {post.type === 'photo' && (
-            <p className="text-[10px] text-primary/70 flex items-center gap-1">
-              <MapPin className="w-2.5 h-2.5" /> São Paulo, BR
-            </p>
-          )}
         </div>
         <Button variant="ghost" size="icon" className="h-8 w-8">
           <MoreHorizontal className="w-5 h-5 text-muted-foreground" />
         </Button>
       </div>
 
-      {/* Content */}
       {post.content && (
-        <p className="px-4 pb-3 text-sm text-foreground leading-relaxed">{post.content}</p>
+        <p className="px-4 pb-3 text-sm text-foreground leading-relaxed whitespace-pre-wrap">{post.content}</p>
       )}
 
-      {/* Images */}
       {post.images.length > 0 && (
         <div className="relative" onDoubleClick={handleDoubleTap}>
-          <img
-            src={post.images[imageIndex]}
-            alt=""
-            className="w-full aspect-[4/3] object-cover"
-          />
-          {/* Double tap heart */}
+          <img src={post.images[imageIndex]} alt="" className="w-full aspect-[4/3] object-cover" />
           <AnimatePresence>
             {showHeart && (
               <motion.div
@@ -109,32 +94,26 @@ const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
         </div>
       )}
 
-      {/* Actions */}
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-4">
-          <motion.button
-            whileTap={{ scale: 1.3 }}
-            onClick={handleLike}
-            className="flex items-center gap-1.5 group"
-          >
-            <Heart className={`w-5 h-5 transition-all ${liked ? 'text-destructive fill-destructive scale-110' : 'text-muted-foreground group-hover:text-foreground'}`} />
-            <span className={`text-xs font-medium ${liked ? 'text-destructive' : 'text-muted-foreground'}`}>{likes}</span>
+          <motion.button whileTap={{ scale: 1.3 }} onClick={() => toggleLike(post.id)} className="flex items-center gap-1.5 group">
+            <Heart className={`w-5 h-5 transition-all ${post.liked ? 'text-destructive fill-destructive scale-110' : 'text-muted-foreground group-hover:text-foreground'}`} />
+            <span className={`text-xs font-medium ${post.liked ? 'text-destructive' : 'text-muted-foreground'}`}>{post.likes}</span>
           </motion.button>
           <button onClick={() => setShowComments(!showComments)} className="flex items-center gap-1.5 group">
             <MessageCircle className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
             <span className="text-xs text-muted-foreground font-medium">{post.comments.length}</span>
           </button>
-          <button className="flex items-center gap-1.5 group">
+          <button onClick={() => sharePost(post.id).then(() => toast.success('Post compartilhado'))} className="flex items-center gap-1.5 group">
             <Share2 className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
             <span className="text-xs text-muted-foreground font-medium">{post.shares}</span>
           </button>
         </div>
-        <motion.button whileTap={{ scale: 1.2 }} onClick={() => setSaved(!saved)}>
-          <Bookmark className={`w-5 h-5 transition-all ${saved ? 'text-primary fill-primary' : 'text-muted-foreground hover:text-foreground'}`} />
+        <motion.button whileTap={{ scale: 1.2 }} onClick={() => toggleSave(post.id)}>
+          <Bookmark className={`w-5 h-5 transition-all ${post.saved ? 'text-primary fill-primary' : 'text-muted-foreground hover:text-foreground'}`} />
         </motion.button>
       </div>
 
-      {/* Comments */}
       <AnimatePresence>
         {showComments && (
           <motion.div
@@ -144,6 +123,9 @@ const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
             className="border-t border-border/30 overflow-hidden"
           >
             <div className="p-4 space-y-3 max-h-48 overflow-y-auto scrollbar-thin">
+              {post.comments.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-2">Seja o primeiro a comentar</p>
+              )}
               {post.comments.map((c) => (
                 <div key={c.id} className="flex gap-2.5">
                   <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground flex-shrink-0">
@@ -156,8 +138,6 @@ const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
                     </p>
                     <div className="flex items-center gap-3 mt-1">
                       <span className="text-[10px] text-muted-foreground">{timeAgo(c.timestamp)}</span>
-                      <button className="text-[10px] text-muted-foreground hover:text-primary font-medium transition-colors">Curtir</button>
-                      <button className="text-[10px] text-muted-foreground hover:text-primary font-medium transition-colors">Responder</button>
                     </div>
                   </div>
                 </div>
@@ -168,10 +148,11 @@ const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
                 type="text"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && submitComment()}
                 placeholder="Adicione um comentário..."
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
               />
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" disabled={!comment.trim()}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" disabled={!comment.trim()} onClick={submitComment}>
                 <Send className="w-4 h-4" />
               </Button>
             </div>
@@ -183,8 +164,36 @@ const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
 };
 
 const CreatePost = () => {
+  const { addPost } = useFeedStore();
+  const me = useProfileStore((s) => s.profile);
   const [content, setContent] = useState('');
   const [focused, setFocused] = useState(false);
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    if (f.size > 10 * 1024 * 1024) return toast.error('Imagem muito grande (máx 10MB)');
+    const r = new FileReader();
+    r.onload = () => setPendingImage(String(r.result));
+    r.readAsDataURL(f);
+  };
+
+  const handlePublish = () => {
+    if (!content.trim() && !pendingImage) return;
+    addPost({
+      userName: me.name || 'Você',
+      userAvatar: me.avatar,
+      content: content.trim(),
+      images: pendingImage ? [pendingImage] : [],
+    });
+    setContent('');
+    setPendingImage(null);
+    setFocused(false);
+    toast.success('Publicado no feed');
+  };
 
   return (
     <motion.div
@@ -192,20 +201,37 @@ const CreatePost = () => {
       animate={{ opacity: 1, y: 0 }}
       className={`glass rounded-2xl p-4 transition-all duration-300 ${focused ? 'glass-border-bright glow-xs' : 'glass-border'}`}
     >
+      <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFile} />
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-gradient-brand flex items-center justify-center text-primary-foreground font-bold text-sm glow-xs">V</div>
+        {me.avatar ? (
+          <img src={me.avatar} alt="" className="w-10 h-10 rounded-2xl object-cover glow-xs" />
+        ) : (
+          <div className="w-10 h-10 rounded-2xl bg-gradient-brand flex items-center justify-center text-primary-foreground font-bold text-sm glow-xs">
+            {(me.name || 'V')[0].toUpperCase()}
+          </div>
+        )}
         <div className="flex-1">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
             placeholder="O que você está pensando?"
             className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none min-h-[50px]"
             rows={2}
           />
+          {pendingImage && (
+            <div className="relative mt-2 rounded-xl overflow-hidden">
+              <img src={pendingImage} alt="" className="w-full max-h-64 object-cover" />
+              <button
+                onClick={() => setPendingImage(null)}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-background/80 backdrop-blur flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
           <AnimatePresence>
-            {(focused || content) && (
+            {(focused || content || pendingImage) && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
@@ -213,20 +239,20 @@ const CreatePost = () => {
                 className="flex items-center justify-between mt-2 pt-2 border-t border-border/30"
               >
                 <div className="flex items-center gap-1">
-                  <button className="p-2 rounded-xl hover:bg-primary/10 transition-colors">
+                  <button onClick={() => fileRef.current?.click()} className="p-2 rounded-xl hover:bg-primary/10 transition-colors">
                     <ImageIcon className="w-5 h-5 text-primary" />
                   </button>
-                  <button className="p-2 rounded-xl hover:bg-primary/10 transition-colors">
+                  <button onClick={() => setContent((c) => c + ' 😀')} className="p-2 rounded-xl hover:bg-primary/10 transition-colors">
                     <Smile className="w-5 h-5 text-primary" />
                   </button>
-                  <button className="p-2 rounded-xl hover:bg-primary/10 transition-colors">
+                  <button onClick={() => toast.info('Localização em breve')} className="p-2 rounded-xl hover:bg-primary/10 transition-colors">
                     <MapPin className="w-5 h-5 text-primary" />
                   </button>
                 </div>
                 <motion.div whileTap={{ scale: 0.95 }}>
-                <Button size="sm" disabled={!content.trim()} className="rounded-xl">
-                  Publicar
-                </Button>
+                  <Button size="sm" disabled={!content.trim() && !pendingImage} className="rounded-xl" onClick={handlePublish}>
+                    Publicar
+                  </Button>
                 </motion.div>
               </motion.div>
             )}
@@ -237,7 +263,6 @@ const CreatePost = () => {
   );
 };
 
-// Stories bar
 const StoriesBar = () => {
   const stories = [
     { name: 'Você', hasNew: false, isMe: true },
@@ -249,19 +274,9 @@ const StoriesBar = () => {
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex gap-3 overflow-x-auto scrollbar-thin pb-1"
-    >
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 overflow-x-auto scrollbar-thin pb-1">
       {stories.map((s, i) => (
-        <motion.button
-          key={s.name}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: i * 0.05 }}
-          className="flex flex-col items-center gap-1.5 flex-shrink-0"
-        >
+        <motion.button key={s.name} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }} className="flex flex-col items-center gap-1.5 flex-shrink-0">
           <div className={`relative rounded-2xl p-[2px] ${s.hasNew ? 'bg-gradient-brand glow-xs' : 'bg-border/50'}`}>
             <div className="rounded-[14px] p-[2px] bg-background">
               <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center text-sm font-bold text-muted-foreground">
@@ -282,19 +297,15 @@ const StoriesBar = () => {
 };
 
 export function FeedPage() {
+  const posts = useFeedStore((s) => s.posts);
   return (
     <div className="h-full overflow-y-auto scrollbar-thin">
       <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex items-center justify-between"
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground">Feed</h1>
             <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="w-3 h-3 text-primary" /> 5 novos posts
+              <TrendingUp className="w-3 h-3 text-primary" /> {posts.length} posts
             </p>
           </div>
           <Badge variant="destructive" className="gap-1">
@@ -305,7 +316,7 @@ export function FeedPage() {
         <StoriesBar />
         <CreatePost />
 
-        {feedPosts.map((post, i) => (
+        {posts.map((post, i) => (
           <PostCard key={post.id} post={post} index={i} />
         ))}
       </div>

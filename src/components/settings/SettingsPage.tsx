@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   User, Bell, Lock, Palette, Moon, Globe, HelpCircle, LogOut,
@@ -15,6 +15,8 @@ import { Badge } from '@/components/ui/badge';
 import { backgroundPatterns } from '@/data/adminData';
 import { toast } from 'sonner';
 import { ThemeCustomizer } from './ThemeCustomizer';
+import { useProfileStore } from '@/store/profileStore';
+
 
 interface SettingItemProps {
   icon: React.ElementType;
@@ -83,45 +85,9 @@ export function SettingsPage() {
   }
 
   if (view === 'profile') {
-    return (
-      <div className="h-full overflow-y-auto scrollbar-thin">
-        <div className="max-w-lg mx-auto px-4 py-4 space-y-6">
-          <BackButton />
-          <div className="flex flex-col items-center">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-3xl bg-primary flex items-center justify-center text-3xl font-bold text-primary-foreground shadow-lg">V</div>
-              <Button size="icon" className="absolute -bottom-1 -right-1 h-8 w-8 rounded-xl">
-                <Camera className="w-4 h-4" />
-              </Button>
-            </div>
-            <h2 className="text-lg font-bold text-foreground mt-4">Você</h2>
-            <p className="text-sm text-muted-foreground">+55 11 98765-4321</p>
-          </div>
-
-          <Card>
-            <CardContent className="p-4 space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="name">Nome</Label>
-                <Input id="name" defaultValue="Você" />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="bio">Bio</Label>
-                <Input id="bio" defaultValue="Olá! Estou usando o iSync 🚀" />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" defaultValue="voce@email.com" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Button className="w-full" onClick={() => { toast.success('Perfil atualizado!'); setView('main'); }}>
-            Salvar Alterações
-          </Button>
-        </div>
-      </div>
-    );
+    return <ProfileEditor onBack={() => setView('main')} />;
   }
+
 
   if (view === 'appearance') {
     return (

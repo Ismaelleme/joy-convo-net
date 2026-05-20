@@ -180,6 +180,69 @@ export class CallSession {
     t.enabled = !t.enabled;
     return !t.enabled; // returns true if off
   }
+  private screenStream: MediaStream | null = null;
+  private originalVideoTrack: MediaStreamTrack | null = null;
+
+  async startScreenShare(): Promise<boolean> {
+    if (!this.localStream) return false;
+    try {
+      const display = await (navigator.mediaDevices as any).getDisplayMedia({
+        video: true,
+        audio: false,
+      });
+      const newTrack = display.getVideoTracks()[0];
+      if (!newTrack) return false;
+
+      const sender = this.pc.getSenders().find((s) => s.track && s.track.kind === 'video');
+      const currentVideo = this.localStream.getVideoTracks()[0] ?? null;
+      this.originalVideoTrack = currentVideo;
+
+      if (sender) {
+        await sender.replaceTrack(newTrack);
+      } else {
+        this.pc.addTrack(newTrack, display);
+      }
+
+      if (currentVideo) this.localStream.removeTrack(currentVideo);
+      this.localStream.addTrack(newTrack);
+      this.screenStream = display;
+
+      newTrack.onended = () => this.stopScreenShare();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async stopScreenShare(): Promise<void> {
+    if (!this.screenStream || !this.localStream) return;
+    const screenTrack = this.screenStream.getVideoTracks()[0];
+    this.screenStream.getTracks().forEach((t) => t.stop());
+
+    let restoredTrack: MediaStreamTrack | null = this.originalVideoTrack;
+    if (!restoredTrack || restoredTrack.readyState === 'ended') {
+      try {
+        const cam = await navigator.mediaDevices.getUserMedia({ video: true });
+        restoredTrack = cam.getVideoTracks()[0];
+      } catch {
+        restoredTrack = null;
+      }
+    }
+
+    const sender = this.pc.getSenders().find((s) => s.track === screenTrack);
+    if (sender && restoredTrack) await sender.replaceTrack(restoredTrack);
+
+    if (screenTrack) this.localStream.removeTrack(screenTrack);
+    if (restoredTrack) this.localStream.addTrack(restoredTrack);
+
+    this.screenStream = null;
+    this.originalVideoTrack = null;
+  }
+
+  isScreenSharing(): boolean {
+    return !!this.screenStream;
+  }
+
 
   end(reason?: string) {
     if (this.ended) return;

@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { authApi, ApiError } from '@/lib/api';
+import { useProfileStore } from '@/store/profileStore';
 import logo from '@/assets/logo.png';
+
 
 const countryCodes = [
   { code: '+55', country: 'BR', flag: '🇧🇷' },
@@ -122,8 +124,15 @@ const Register = () => {
       });
       localStorage.setItem('auth_token', res.token);
       localStorage.setItem('auth_user', JSON.stringify(res.user));
+      useProfileStore.getState().setProfile({
+        id: res.user.id,
+        name: res.user.name,
+        email: res.user.email,
+        phone: res.user.phone ?? e164(),
+      });
       toast.success(`Bem-vindo, ${res.user.name}!`);
       navigate('/');
+
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : 'Erro ao criar conta.';
       setError(msg);

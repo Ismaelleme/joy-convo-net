@@ -81,8 +81,39 @@ export function MessageBubble({ message, chatId, onReply }: MessageBubbleProps) 
               </button>
             </form>
           ) : (
-            <p className="text-sm leading-relaxed break-words">{message.content}</p>
+            <>
+              {message.imageUrl && (
+                <a href={message.imageUrl} target="_blank" rel="noreferrer" className="block mb-1">
+                  <img
+                    src={message.imageUrl}
+                    alt="anexo"
+                    className="rounded-xl max-h-64 object-cover w-full"
+                  />
+                </a>
+              )}
+              {message.fileUrl && !message.imageUrl && (
+                <a
+                  href={message.fileUrl}
+                  download={message.fileName ?? 'arquivo'}
+                  className="flex items-center gap-2 p-2 rounded-xl bg-background/40 hover:bg-background/60 transition-all mb-1"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-xs">📎</div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium truncate">{message.fileName ?? 'Arquivo'}</p>
+                    {message.fileSize && (
+                      <p className="text-[10px] text-muted-foreground">
+                        {(message.fileSize / 1024).toFixed(1)} KB
+                      </p>
+                    )}
+                  </div>
+                </a>
+              )}
+              {message.content && message.type !== 'image' && (
+                <p className="text-sm leading-relaxed break-words">{message.content}</p>
+              )}
+            </>
           )}
+
 
           <div className={`flex items-center gap-1 mt-0.5 ${isMine ? 'justify-end' : 'justify-start'}`}>
             {message.isEdited && <span className="text-[10px] text-muted-foreground">editada</span>}

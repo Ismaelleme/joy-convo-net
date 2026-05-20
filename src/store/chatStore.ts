@@ -17,7 +17,13 @@ interface ChatStore {
   setMessageSearchQuery: (query: string) => void;
   setShowMobileSidebar: (show: boolean) => void;
 
-  sendMessage: (chatId: string, content: string, replyTo?: Message) => void;
+  sendMessage: (
+    chatId: string,
+    content: string,
+    replyTo?: Message,
+    attachment?: { type: 'image' | 'file'; url: string; name?: string; size?: number },
+  ) => void;
+
   editMessage: (chatId: string, messageId: string, newContent: string) => void;
   deleteMessage: (chatId: string, messageId: string) => void;
   toggleReaction: (chatId: string, messageId: string, emoji: string) => void;
@@ -45,18 +51,23 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   setMessageSearchQuery: (query) => set({ messageSearchQuery: query }),
   setShowMobileSidebar: (show) => set({ showMobileSidebar: show }),
 
-  sendMessage: (chatId, content, replyTo) => {
+  sendMessage: (chatId, content, replyTo, attachment) => {
     const msg: Message = {
       id: `msg-${Date.now()}`,
       chatId,
       senderId: 'me',
       content,
-      type: 'text',
+      type: attachment?.type ?? 'text',
       timestamp: new Date(),
       status: 'sent',
       reactions: [],
       replyTo,
+      ...(attachment?.type === 'image' ? { imageUrl: attachment.url } : {}),
+      ...(attachment?.type === 'file'
+        ? { fileUrl: attachment.url, fileName: attachment.name, fileSize: attachment.size }
+        : {}),
     };
+
     set((state) => {
       const chatMsgs = [...(state.messages[chatId] || []), msg];
       const chats = state.chats.map((c) =>

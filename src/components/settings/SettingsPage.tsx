@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   User, Bell, Lock, Palette, Moon, Globe, HelpCircle, LogOut,
@@ -15,6 +15,8 @@ import { Badge } from '@/components/ui/badge';
 import { backgroundPatterns } from '@/data/adminData';
 import { toast } from 'sonner';
 import { ThemeCustomizer } from './ThemeCustomizer';
+import { useProfileStore } from '@/store/profileStore';
+
 
 interface SettingItemProps {
   icon: React.ElementType;
@@ -83,45 +85,9 @@ export function SettingsPage() {
   }
 
   if (view === 'profile') {
-    return (
-      <div className="h-full overflow-y-auto scrollbar-thin">
-        <div className="max-w-lg mx-auto px-4 py-4 space-y-6">
-          <BackButton />
-          <div className="flex flex-col items-center">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-3xl bg-primary flex items-center justify-center text-3xl font-bold text-primary-foreground shadow-lg">V</div>
-              <Button size="icon" className="absolute -bottom-1 -right-1 h-8 w-8 rounded-xl">
-                <Camera className="w-4 h-4" />
-              </Button>
-            </div>
-            <h2 className="text-lg font-bold text-foreground mt-4">Você</h2>
-            <p className="text-sm text-muted-foreground">+55 11 98765-4321</p>
-          </div>
-
-          <Card>
-            <CardContent className="p-4 space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="name">Nome</Label>
-                <Input id="name" defaultValue="Você" />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="bio">Bio</Label>
-                <Input id="bio" defaultValue="Olá! Estou usando o iSync 🚀" />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" defaultValue="voce@email.com" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Button className="w-full" onClick={() => { toast.success('Perfil atualizado!'); setView('main'); }}>
-            Salvar Alterações
-          </Button>
-        </div>
-      </div>
-    );
+    return <ProfileEditor onBack={() => setView('main')} />;
   }
+
 
   if (view === 'appearance') {
     return (
@@ -288,16 +254,8 @@ export function SettingsPage() {
         <h1 className="text-xl font-bold text-foreground">Configurações</h1>
 
         {/* Profile card */}
-        <Card className="cursor-pointer hover:bg-accent/50 transition-all" onClick={() => setView('profile')}>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-xl font-bold text-primary-foreground shadow-md">V</div>
-            <div className="flex-1 min-w-0">
-              <p className="text-base font-bold text-foreground">Você</p>
-              <p className="text-xs text-muted-foreground">Olá! Estou usando o iSync 🚀</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </CardContent>
-        </Card>
+        <ProfileSummaryCard onClick={() => setView('profile')} />
+
 
         <Card>
           <CardContent className="p-0 divide-y divide-border/50">
@@ -329,6 +287,100 @@ export function SettingsPage() {
         </Card>
 
         <p className="text-center text-[10px] text-muted-foreground py-4">iSync v1.0.0 · Feito com 💙</p>
+      </div>
+    </div>
+  );
+}
+
+function ProfileSummaryCard({ onClick }: { onClick: () => void }) {
+  const me = useProfileStore((s) => s.profile);
+  return (
+    <Card className="cursor-pointer hover:bg-accent/50 transition-all" onClick={onClick}>
+      <CardContent className="p-4 flex items-center gap-3">
+        {me.avatar ? (
+          <img src={me.avatar} alt="" className="w-14 h-14 rounded-2xl object-cover shadow-md" />
+        ) : (
+          <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-xl font-bold text-primary-foreground shadow-md">
+            {(me.name || 'V')[0].toUpperCase()}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="text-base font-bold text-foreground truncate">{me.name || 'Você'}</p>
+          <p className="text-xs text-muted-foreground truncate">{me.bio || 'Sem bio'}</p>
+        </div>
+        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+      </CardContent>
+    </Card>
+  );
+}
+
+function ProfileEditor({ onBack }: { onBack: () => void }) {
+  const { profile, setProfile, setAvatarFromFile } = useProfileStore();
+  const [name, setName] = useState(profile.name);
+  const [bio, setBio] = useState(profile.bio);
+  const [email, setEmail] = useState(profile.email);
+  const [phone, setPhone] = useState(profile.phone);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handlePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) return toast.error('Foto muito grande (máx 5MB)');
+    await setAvatarFromFile(f);
+    toast.success('Foto de perfil atualizada');
+  };
+
+  const save = () => {
+    setProfile({ name: name.trim() || 'Você', bio, email, phone });
+    toast.success('Perfil atualizado!');
+    onBack();
+  };
+
+  return (
+    <div className="h-full overflow-y-auto scrollbar-thin">
+      <div className="max-w-lg mx-auto px-4 py-4 space-y-6">
+        <Button variant="ghost" size="sm" onClick={onBack} className="mb-2">← Voltar</Button>
+        <input ref={fileRef} type="file" accept="image/*" hidden onChange={handlePick} />
+        <div className="flex flex-col items-center">
+          <div className="relative">
+            {profile.avatar ? (
+              <img src={profile.avatar} alt="" className="w-24 h-24 rounded-3xl object-cover shadow-lg" />
+            ) : (
+              <div className="w-24 h-24 rounded-3xl bg-primary flex items-center justify-center text-3xl font-bold text-primary-foreground shadow-lg">
+                {(name || 'V')[0].toUpperCase()}
+              </div>
+            )}
+            <Button size="icon" onClick={() => fileRef.current?.click()} className="absolute -bottom-1 -right-1 h-8 w-8 rounded-xl">
+              <Camera className="w-4 h-4" />
+            </Button>
+          </div>
+          <h2 className="text-lg font-bold text-foreground mt-4">{name || 'Você'}</h2>
+          {phone && <p className="text-sm text-muted-foreground">{phone}</p>}
+        </div>
+
+        <Card>
+          <CardContent className="p-4 space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="name">Nome</Label>
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="bio">Bio</Label>
+              <Input id="bio" value={bio} onChange={(e) => setBio(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="phone">Telefone</Label>
+              <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Button className="w-full" onClick={save}>Salvar Alterações</Button>
       </div>
     </div>
   );

@@ -71,22 +71,67 @@ export interface AuthUser {
   phoneVerified?: boolean;
 }
 
+/**
+ * Demo fallback: se o backend NestJS não responder (status 0),
+ * usamos um fluxo local com código fixo 123456 para o preview funcionar.
+ */
+const DEMO_TOKEN_PREFIX = 'demo-verified-';
+
+async function withDemo<T>(real: () => Promise<T>, fallback: () => T): Promise<T> {
+  try {
+    return await real();
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 0) return fallback();
+    throw e;
+  }
+}
+
 export const authApi = {
   sendCode: (phone: string) =>
-    api.post<{ status: string; to: string }>('/auth/send-code', { phone }),
+    withDemo(
+      () => api.post<{ status: string; to: string }>('/auth/send-code', { phone }),
+      () => ({ status: 'mock', to: phone }),
+    ),
   verifyCode: (phone: string, code: string) =>
-    api.post<{ approved: boolean; verificationToken?: string }>('/auth/verify-code', {
-      phone,
-      code,
-    }),
+    withDemo(
+      () =>
+        api.post<{ approved: boolean; verificationToken?: string }>('/auth/verify-code', {
+          phone,
+          code,
+        }),
+      () =>
+        code === '123456'
+          ? { approved: true, verificationToken: DEMO_TOKEN_PREFIX + phone }
+          : { approved: false },
+    ),
   register: (input: {
     email: string;
     name: string;
     password: string;
     phone: string;
     verificationToken: string;
-  }) => api.post<{ user: AuthUser; token: string }>('/auth/register', input),
+  }) =>
+    withDemo(
+      () => api.post<{ user: AuthUser; token: string }>('/auth/register', input),
+      () => ({
+        user: {
+          id: 'local-' + Date.now(),
+          email: input.email,
+          name: input.name,
+          phone: input.phone,
+          phoneVerified: true,
+        },
+        token: DEMO_TOKEN_PREFIX + 'session',
+      }),
+    ),
   login: (email: string, password: string) =>
-    api.post<{ user: AuthUser; token: string }>('/auth/login', { email, password }),
+    withDemo(
+      () => api.post<{ user: AuthUser; token: string }>('/auth/login', { email, password }),
+      () => ({
+        user: { id: 'local-demo', email, name: email.split('@')[0] || 'Usuário' },
+        token: DEMO_TOKEN_PREFIX + 'session',
+      }),
+    ),
   me: () => api.get<AuthUser>('/auth/me'),
 };
+

@@ -8,6 +8,8 @@ interface FeedState {
   toggleSave: (id: string) => void;
   sharePost: (id: string) => Promise<void>;
   addComment: (id: string, userName: string, content: string) => void;
+  removePost: (id: string) => void;
+  hidePost: (id: string) => void;
 }
 
 export const useFeedStore = create<FeedState>((set, get) => ({
@@ -63,4 +65,6 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       posts: s.posts.map((p) => (p.id === id ? { ...p, comments: [...p.comments, c] } : p)),
     }));
   },
+  removePost: (id) => set((s) => ({ posts: s.posts.filter((p) => p.id !== id) })),
+  hidePost: (id) => set((s) => ({ posts: s.posts.filter((p) => p.id !== id) })),
 }));

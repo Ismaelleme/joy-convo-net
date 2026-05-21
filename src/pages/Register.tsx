@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, ArrowRight, ArrowLeft, Shield, ChevronDown, Mail, Lock, User as UserIcon } from 'lucide-react';
+import { Phone, ArrowRight, ArrowLeft, Shield, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,6 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { authApi, ApiError } from '@/lib/api';
 import { useProfileStore } from '@/store/profileStore';
 import logo from '@/assets/logo.png';
-
 
 const countryCodes = [
   { code: '+55', country: 'BR', flag: '🇧🇷' },
@@ -19,7 +18,7 @@ const countryCodes = [
   { code: '+34', country: 'ES', flag: '🇪🇸' },
 ];
 
-type Step = 'phone' | 'otp' | 'profile';
+type Step = 'phone' | 'otp';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -28,12 +27,9 @@ const Register = () => {
   const [countryCode, setCountryCode] = useState(countryCodes[0]);
   const [showCountry, setShowCountry] = useState(false);
   const [otp, setOtp] = useState('');
-  const [verificationToken, setVerificationToken] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isMock, setIsMock] = useState(false);
 
   const formatPhone = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 11);
@@ -46,17 +42,16 @@ const Register = () => {
 
   const handlePhoneSubmit = async () => {
     const digits = phone.replace(/\D/g, '');
-    if (digits.length < 10) {
-      setError('Número inválido');
-      return;
-    }
+    if (digits.length < 10) return setError('Número inválido');
     setError('');
     setIsLoading(true);
     try {
       const res = await authApi.sendCode(e164());
       if (res.status === 'mock') {
-        toast.info('Twilio não configurado — use o código 123456 para testar.');
+        setIsMock(true);
+        toast.info('Modo demo: use 123456 para entrar (backend SMS não conectado).');
       } else {
+        setIsMock(false);
         toast.success('Código enviado por SMS');
       }
       setStep('otp');
@@ -69,6 +64,17 @@ const Register = () => {
     }
   };
 
+  const finishLogin = (phoneStr: string) => {
+    const existing = useProfileStore.getState().profile;
+    const userId = existing.id && existing.id !== 'me' ? existing.id : 'user-' + Date.now();
+    const name = existing.name && existing.name !== 'Você' ? existing.name : `Usuário ${phoneStr.slice(-4)}`;
+    localStorage.setItem('auth_token', 'session-' + Date.now());
+    localStorage.setItem('auth_user', JSON.stringify({ id: userId, name, phone: phoneStr }));
+    useProfileStore.getState().setProfile({ id: userId, name, phone: phoneStr });
+    toast.success(`Bem-vindo, ${name}!`);
+    navigate('/');
+  };
+
   const handleOtpComplete = async (value: string) => {
     setOtp(value);
     setError('');
@@ -76,14 +82,13 @@ const Register = () => {
     setIsLoading(true);
     try {
       const res = await authApi.verifyCode(e164(), value);
-      if (!res.approved || !res.verificationToken) {
+      if (!res.approved) {
         setError('Código incorreto');
         toast.error('Código incorreto');
+        setOtp('');
         return;
       }
-      setVerificationToken(res.verificationToken);
-      toast.success('Telefone verificado');
-      setStep('profile');
+      finishLogin(e164());
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : 'Erro ao verificar.';
       setError(msg);
@@ -107,41 +112,6 @@ const Register = () => {
     }
   };
 
-  const handleProfileSubmit = async () => {
-    if (!name.trim() || name.trim().length < 2) return setError('Digite seu nome (min. 2 letras)');
-    if (!/^\S+@\S+\.\S+$/.test(email)) return setError('E-mail inválido');
-    if (password.length < 8) return setError('Senha deve ter ao menos 8 caracteres');
-
-    setError('');
-    setIsLoading(true);
-    try {
-      const res = await authApi.register({
-        email: email.trim(),
-        name: name.trim(),
-        password,
-        phone: e164(),
-        verificationToken,
-      });
-      localStorage.setItem('auth_token', res.token);
-      localStorage.setItem('auth_user', JSON.stringify(res.user));
-      useProfileStore.getState().setProfile({
-        id: res.user.id,
-        name: res.user.name,
-        email: res.user.email,
-        phone: res.user.phone ?? e164(),
-      });
-      toast.success(`Bem-vindo, ${res.user.name}!`);
-      navigate('/');
-
-    } catch (err) {
-      const msg = err instanceof ApiError ? err.message : 'Erro ao criar conta.';
-      setError(msg);
-      toast.error(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const slideVariants = {
     enter: { x: 80, opacity: 0 },
     center: { x: 0, opacity: 1 },
@@ -157,7 +127,7 @@ const Register = () => {
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center mb-10">
           <img src={logo} alt="iSync" width={72} height={72} className="mb-3 rounded-2xl" />
           <h1 className="text-2xl font-bold text-gradient tracking-tight">iSync</h1>
-          <p className="text-sm text-muted-foreground mt-1">Conecte-se ao que importa</p>
+          <p className="text-sm text-muted-foreground mt-1">Entre com seu número</p>
         </motion.div>
 
         <AnimatePresence mode="wait">
@@ -165,7 +135,7 @@ const Register = () => {
             <motion.div key="phone" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }} className="space-y-6">
               <div className="text-center space-y-2">
                 <h2 className="text-lg font-bold text-foreground">Seu número de telefone</h2>
-                <p className="text-sm text-muted-foreground">Enviaremos um código SMS real para verificar</p>
+                <p className="text-sm text-muted-foreground">Enviaremos um código SMS para confirmar</p>
               </div>
 
               <div className="space-y-3">
@@ -182,12 +152,7 @@ const Register = () => {
 
                   <AnimatePresence>
                     {showCountry && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        className="absolute top-full left-0 right-0 mt-1 glass glass-border rounded-2xl shadow-lg overflow-hidden z-20"
-                      >
+                      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="absolute top-full left-0 right-0 mt-1 glass glass-border rounded-2xl shadow-lg overflow-hidden z-20">
                         {countryCodes.map((cc) => (
                           <button
                             key={cc.code}
@@ -223,14 +188,14 @@ const Register = () => {
                 disabled={isLoading || phone.replace(/\D/g, '').length < 10}
                 className="w-full h-12 rounded-2xl text-base font-bold gap-2 bg-gradient-brand hover:brightness-110 transition-all glow-sm border-0"
               >
-                {isLoading ? <Spinner /> : (<>Continuar <ArrowRight className="w-5 h-5" /></>)}
+                {isLoading ? <Spinner /> : (<>Enviar código <ArrowRight className="w-5 h-5" /></>)}
               </Button>
             </motion.div>
           )}
 
           {step === 'otp' && (
             <motion.div key="otp" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }} className="space-y-6">
-              <button onClick={() => setStep('phone')} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors text-sm">
+              <button onClick={() => { setStep('phone'); setOtp(''); setError(''); }} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors text-sm">
                 <ArrowLeft className="w-4 h-4" /> Voltar
               </button>
 
@@ -244,6 +209,11 @@ const Register = () => {
                   <br />
                   <span className="text-foreground font-medium">{countryCode.code} {phone}</span>
                 </p>
+                {isMock && (
+                  <p className="text-[11px] text-amber-500 bg-amber-500/10 rounded-lg px-3 py-1.5 inline-block mt-2">
+                    Demo: use o código <span className="font-bold">123456</span>
+                  </p>
+                )}
               </div>
 
               <div className="flex justify-center">
@@ -265,62 +235,6 @@ const Register = () => {
                   Reenviar código
                 </button>
               </p>
-            </motion.div>
-          )}
-
-          {step === 'profile' && (
-            <motion.div key="profile" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }} className="space-y-5">
-              <div className="text-center space-y-2">
-                <h2 className="text-lg font-bold text-foreground">Crie sua conta</h2>
-                <p className="text-sm text-muted-foreground">Telefone verificado ✓ Agora seus dados de acesso</p>
-              </div>
-
-              <div className="space-y-3">
-                <div className="relative">
-                  <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    value={name}
-                    onChange={(e) => { setName(e.target.value); setError(''); }}
-                    placeholder="Seu nome completo"
-                    maxLength={60}
-                    className="pl-12 h-12 rounded-2xl glass glass-border text-foreground border-0"
-                  />
-                </div>
-
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); setError(''); }}
-                    placeholder="seu@email.com"
-                    maxLength={120}
-                    className="pl-12 h-12 rounded-2xl glass glass-border text-foreground border-0"
-                  />
-                </div>
-
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                    placeholder="Senha (mín. 8 caracteres)"
-                    maxLength={72}
-                    className="pl-12 h-12 rounded-2xl glass glass-border text-foreground border-0"
-                  />
-                </div>
-
-                {error && <p className="text-destructive text-sm text-center">{error}</p>}
-              </div>
-
-              <Button
-                onClick={handleProfileSubmit}
-                disabled={isLoading || !name.trim() || !email.trim() || password.length < 8}
-                className="w-full h-12 rounded-2xl text-base font-bold gap-2 bg-gradient-brand hover:brightness-110 transition-all glow-sm border-0"
-              >
-                {isLoading ? <Spinner /> : (<>Criar conta <ArrowRight className="w-5 h-5" /></>)}
-              </Button>
             </motion.div>
           )}
         </AnimatePresence>

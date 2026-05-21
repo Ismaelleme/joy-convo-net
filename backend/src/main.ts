@@ -30,7 +30,7 @@ async function bootstrap() {
   // Swagger
   const swaggerConfig = new DocumentBuilder()
     .setTitle('iSync API')
-    .setDescription('API completa do iSync — Chat, Feed, Agenda, Comunidades, Marketplace, IA e mais')
+    .setDescription('API completa do iSync — Chat, Feed, Agenda, Comunidades, IA e mais')
     .setVersion('2.0')
     .addBearerAuth()
     .build();

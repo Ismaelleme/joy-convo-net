@@ -9,7 +9,6 @@ import { CallsModule } from './calls/calls.module';
 import { FeedModule } from './feed/feed.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { CommunitiesModule } from './communities/communities.module';
-import { MarketplaceModule } from './marketplace/marketplace.module';
 import { AiModule } from './ai/ai.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { SettingsModule } from './settings/settings.module';
@@ -26,7 +25,6 @@ import { SettingsModule } from './settings/settings.module';
     FeedModule,
     ScheduleModule,
     CommunitiesModule,
-    MarketplaceModule,
     AiModule,
     NotificationsModule,
     SettingsModule,

@@ -171,8 +171,6 @@ const Index = () => {
                 </div>
               </div>
             )}
-
-            {activeTab === 'marketplace' && <MarketplacePage />}
           </motion.div>
         </AnimatePresence>
       </div>

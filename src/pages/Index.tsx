@@ -145,29 +145,8 @@ const Index = () => {
 
             {activeTab === 'explore' && (
               <div className="w-full h-full flex flex-col">
-                <div className="flex items-center gap-1 px-4 py-2 glass glass-border">
-                  {([
-                    { key: 'videos' as const, label: 'Vídeos', icon: Compass },
-                    { key: 'status' as const, label: 'Stories', icon: Circle },
-                    { key: 'calls' as const, label: 'Chamadas', icon: PhoneCall },
-                  ]).map(({ key, label, icon: Icon }) => (
-                    <motion.button
-                      key={key}
-                      whileTap={{ scale: 0.93 }}
-                      onClick={() => setExploreSubTab(key)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                        exploreSubTab === key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      {label}
-                    </motion.button>
-                  ))}
-                </div>
                 <div className="flex-1 overflow-hidden">
-                  {exploreSubTab === 'videos' && <VideoFeed />}
-                  {exploreSubTab === 'status' && <StatusPage />}
-                  {exploreSubTab === 'calls' && <CallsPage />}
+                  <VideoFeed />
                 </div>
               </div>
             )}

@@ -63,6 +63,11 @@ export function SchedulePage() {
     toast.success('Agendamento concluído!');
   };
 
+  const handleCancel = (id: string) => {
+    setEvents(prev => prev.map(e => e.id === id ? { ...e, status: 'cancelled' as const } : e));
+    toast.success('Compromisso cancelado');
+  };
+
   const handleEdit = (event: ScheduleEvent) => {
     setEditingEvent(event);
     setShowForm(true);
@@ -128,6 +133,7 @@ export function SchedulePage() {
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                   onComplete={handleComplete}
+                  onCancel={handleCancel}
                 />
               ))}
             </div>

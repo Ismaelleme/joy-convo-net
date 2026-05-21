@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Phone, Users, Bell, CalendarDays, MapPin, AlertCircle, CheckCircle2, XCircle, Pencil, Trash2, Check } from 'lucide-react';
+import { Clock, Phone, Users, Bell, CalendarDays, MapPin, AlertCircle, CheckCircle2, XCircle, Pencil, Trash2, Check, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,9 +27,10 @@ interface EventCardProps {
   onEdit: (event: ScheduleEvent) => void;
   onDelete: (id: string) => void;
   onComplete: (id: string) => void;
+  onCancel: (id: string) => void;
 }
 
-export function EventCard({ event, index, onEdit, onDelete, onComplete }: EventCardProps) {
+export function EventCard({ event, index, onEdit, onDelete, onComplete, onCancel }: EventCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const Icon = typeIcons[event.type] || CalendarDays;
 
@@ -90,15 +91,26 @@ export function EventCard({ event, index, onEdit, onDelete, onComplete }: EventC
                 {/* Action buttons - visible on hover or always on mobile */}
                 <div className="flex items-center gap-1.5 mt-3 pt-2 border-t border-border/20">
                   {event.status === 'upcoming' && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 text-xs gap-1 text-online hover:text-online hover:bg-online/10"
-                      onClick={() => onComplete(event.id)}
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      Concluir
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs gap-1 text-online hover:text-online hover:bg-online/10"
+                        onClick={() => onComplete(event.id)}
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        Concluir
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs gap-1 text-amber-500 hover:text-amber-500 hover:bg-amber-500/10"
+                        onClick={() => onCancel(event.id)}
+                      >
+                        <Ban className="w-3.5 h-3.5" />
+                        Cancelar
+                      </Button>
+                    </>
                   )}
                   <Button
                     size="sm"

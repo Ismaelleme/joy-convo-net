@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send, Image as ImageIcon, Smile, MapPin, TrendingUp, Flame, X } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send, Image as ImageIcon, Smile, MapPin, TrendingUp, Flame, X, Link2, EyeOff, Flag, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useFeedStore } from '@/store/feedStore';
 import { useProfileStore } from '@/store/profileStore';
 import { UserAvatar } from '@/components/chat/UserAvatar';
@@ -20,7 +21,7 @@ function timeAgo(date: Date): string {
 }
 
 const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
-  const { toggleLike, toggleSave, sharePost, addComment } = useFeedStore();
+  const { toggleLike, toggleSave, sharePost, addComment, removePost, hidePost } = useFeedStore();
   const me = useProfileStore((s) => s.profile);
   const [showComments, setShowComments] = useState(false);
   const [showHeart, setShowHeart] = useState(false);
@@ -55,9 +56,39 @@ const PostCard = ({ post, index }: { post: FeedPost; index: number }) => {
             <p className="text-[11px] text-muted-foreground">{timeAgo(post.timestamp)}</p>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MoreHorizontal className="w-5 h-5 text-muted-foreground" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreHorizontal className="w-5 h-5 text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuItem onClick={() => { toggleSave(post.id); toast.success(post.saved ? 'Removido dos salvos' : 'Post salvo'); }}>
+              <Bookmark className="w-4 h-4 mr-2" /> {post.saved ? 'Remover dos salvos' : 'Salvar post'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={async () => { await navigator.clipboard.writeText(`${post.content}\n— ${post.userName} no iSync`); toast.success('Link copiado'); }}>
+              <Link2 className="w-4 h-4 mr-2" /> Copiar link
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { sharePost(post.id); }}>
+              <Share2 className="w-4 h-4 mr-2" /> Compartilhar
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {post.userId === 'me' ? (
+              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => { removePost(post.id); toast.success('Post excluído'); }}>
+                <Trash2 className="w-4 h-4 mr-2" /> Excluir post
+              </DropdownMenuItem>
+            ) : (
+              <>
+                <DropdownMenuItem onClick={() => { hidePost(post.id); toast.success('Post ocultado'); }}>
+                  <EyeOff className="w-4 h-4 mr-2" /> Ocultar
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => toast.success('Denúncia enviada')}>
+                  <Flag className="w-4 h-4 mr-2" /> Denunciar
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {post.content && (

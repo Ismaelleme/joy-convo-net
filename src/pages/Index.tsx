@@ -1,20 +1,18 @@
 import { useState } from 'react';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatView } from '@/components/chat/ChatView';
-import { StatusPage } from '@/components/status/StatusPage';
 import { VideoFeed } from '@/components/videos/VideoFeed';
 import { FeedPage } from '@/components/feed/FeedPage';
 import { CommunitiesPage } from '@/components/communities/CommunitiesPage';
 
-import { CallsPage } from '@/components/calls/CallsPage';
 import { ContactsPage } from '@/components/contacts/ContactsPage';
 import { SchedulePage } from '@/components/schedule/SchedulePage';
 import { SettingsPage } from '@/components/settings/SettingsPage';
 import { AIAssistantPage } from '@/components/ai/AIAssistantPage';
 import { useChatStore } from '@/store/chatStore';
 import {
-  MessageCircle, Circle, Compass, Home, Users,
-  PhoneCall, Contact2, CalendarDays, Settings, Bell, Search, Sparkles
+  MessageCircle, Compass, Home, Users,
+  Contact2, CalendarDays, Settings, Bell, Search, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -28,7 +26,6 @@ type Tab = 'feed' | 'chat' | 'ai' | 'contacts' | 'schedule' | 'settings' | 'comm
 const Index = () => {
   const { activeChatId, showMobileSidebar } = useChatStore();
   const [activeTab, setActiveTab] = useState<Tab>('feed');
-  const [exploreSubTab, setExploreSubTab] = useState<'videos' | 'status' | 'calls'>('videos');
   const [notifOpen, setNotifOpen] = useState(false);
   const unreadCount = useCallStore((s) => s.notifications.filter((n) => !n.read).length);
   const markAllRead = useCallStore((s) => s.markAllRead);
@@ -145,29 +142,8 @@ const Index = () => {
 
             {activeTab === 'explore' && (
               <div className="w-full h-full flex flex-col">
-                <div className="flex items-center gap-1 px-4 py-2 glass glass-border">
-                  {([
-                    { key: 'videos' as const, label: 'Vídeos', icon: Compass },
-                    { key: 'status' as const, label: 'Stories', icon: Circle },
-                    { key: 'calls' as const, label: 'Chamadas', icon: PhoneCall },
-                  ]).map(({ key, label, icon: Icon }) => (
-                    <motion.button
-                      key={key}
-                      whileTap={{ scale: 0.93 }}
-                      onClick={() => setExploreSubTab(key)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                        exploreSubTab === key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      {label}
-                    </motion.button>
-                  ))}
-                </div>
                 <div className="flex-1 overflow-hidden">
-                  {exploreSubTab === 'videos' && <VideoFeed />}
-                  {exploreSubTab === 'status' && <StatusPage />}
-                  {exploreSubTab === 'calls' && <CallsPage />}
+                  <VideoFeed />
                 </div>
               </div>
             )}

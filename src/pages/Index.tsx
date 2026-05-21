@@ -5,7 +5,7 @@ import { StatusPage } from '@/components/status/StatusPage';
 import { VideoFeed } from '@/components/videos/VideoFeed';
 import { FeedPage } from '@/components/feed/FeedPage';
 import { CommunitiesPage } from '@/components/communities/CommunitiesPage';
-import { MarketplacePage } from '@/components/marketplace/MarketplacePage';
+
 import { CallsPage } from '@/components/calls/CallsPage';
 import { ContactsPage } from '@/components/contacts/ContactsPage';
 import { SchedulePage } from '@/components/schedule/SchedulePage';
@@ -13,7 +13,7 @@ import { SettingsPage } from '@/components/settings/SettingsPage';
 import { AIAssistantPage } from '@/components/ai/AIAssistantPage';
 import { useChatStore } from '@/store/chatStore';
 import {
-  MessageCircle, Circle, Compass, Home, Users, ShoppingBag,
+  MessageCircle, Circle, Compass, Home, Users,
   PhoneCall, Contact2, CalendarDays, Settings, Bell, Search, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,7 +23,7 @@ import { IncomingCallListener } from '@/components/calls/IncomingCallSheet';
 import { NotificationsPopover } from '@/components/notifications/NotificationsPopover';
 import { useCallStore } from '@/store/callStore';
 
-type Tab = 'feed' | 'chat' | 'ai' | 'contacts' | 'schedule' | 'settings' | 'communities' | 'explore' | 'marketplace';
+type Tab = 'feed' | 'chat' | 'ai' | 'contacts' | 'schedule' | 'settings' | 'communities' | 'explore';
 
 const Index = () => {
   const { activeChatId, showMobileSidebar } = useChatStore();
@@ -45,7 +45,6 @@ const Index = () => {
     { key: 'contacts', label: 'Contatos', icon: Contact2 },
     { key: 'communities', label: 'Comunidades', icon: Users },
     { key: 'explore', label: 'Explorar', icon: Compass },
-    { key: 'marketplace', label: 'Loja', icon: ShoppingBag },
   ];
 
   const handleTabChange = (key: Tab) => {

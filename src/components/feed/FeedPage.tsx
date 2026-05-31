@@ -1,11 +1,13 @@
 import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send, Image as ImageIcon, Smile, MapPin, TrendingUp, Flame, X, Link2, EyeOff, Flag, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send, Image as ImageIcon, Smile, MapPin, TrendingUp, Flame, X, Link2, EyeOff, Flag, Trash2, Plus, Camera, Type as TypeIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useFeedStore } from '@/store/feedStore';
 import { useProfileStore } from '@/store/profileStore';
+import { useStoryStore } from '@/store/storyStore';
+import { StatusViewer } from '@/components/status/StatusViewer';
 import { UserAvatar } from '@/components/chat/UserAvatar';
 import { toast } from 'sonner';
 import type { FeedPost } from '@/data/feedData';

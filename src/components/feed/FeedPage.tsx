@@ -296,36 +296,187 @@ const CreatePost = () => {
   );
 };
 
+const STORY_BG_OPTIONS = [
+  'from-violet-600 to-fuchsia-700',
+  'from-emerald-600 to-teal-800',
+  'from-rose-500 to-orange-600',
+  'from-sky-600 to-indigo-800',
+];
+
 const StoriesBar = () => {
-  const stories = [
-    { name: 'Você', hasNew: false, isMe: true },
-    { name: 'Ana', hasNew: true },
-    { name: 'Carlos', hasNew: true },
-    { name: 'Marina', hasNew: true },
-    { name: 'Pedro', hasNew: false },
-    { name: 'Julia', hasNew: false },
-  ];
+  const stories = useStoryStore((s) => s.stories);
+  const addMyStory = useStoryStore((s) => s.addMyStory);
+  const markSeen = useStoryStore((s) => s.markSeen);
+  const me = useProfileStore((s) => s.profile);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [viewerIdx, setViewerIdx] = useState<number | null>(null);
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [storyText, setStoryText] = useState('');
+  const [storyBg, setStoryBg] = useState(STORY_BG_OPTIONS[0]);
+
+  const myStory = stories.find((x) => x.userId === 'me');
+  const others = stories.filter((x) => x.userId !== 'me');
+  const ordered = myStory ? [myStory, ...others] : others;
+
+  const openViewer = (storyId: string) => {
+    const story = ordered.find((x) => x.id === storyId);
+    if (!story) return;
+    if (story.userId === 'me' && story.items.length === 0) {
+      setComposerOpen(true);
+      return;
+    }
+    setViewerIdx(ordered.findIndex((x) => x.id === storyId));
+    markSeen(storyId);
+  };
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    if (f.size > 10 * 1024 * 1024) return toast.error('Imagem muito grande (máx 10MB)');
+    const reader = new FileReader();
+    reader.onload = () => {
+      addMyStory({ type: 'image', content: String(reader.result), caption: '' });
+      toast.success('Story publicado!');
+      setComposerOpen(false);
+    };
+    reader.readAsDataURL(f);
+  };
+
+  const publishText = () => {
+    if (!storyText.trim()) return;
+    addMyStory({ type: 'text', content: storyText.trim(), bgColor: storyBg });
+    setStoryText('');
+    setComposerOpen(false);
+    toast.success('Story publicado!');
+  };
+
+  const active = viewerIdx !== null ? ordered[viewerIdx] : null;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 overflow-x-auto scrollbar-thin pb-1">
-      {stories.map((s, i) => (
-        <motion.button key={s.name} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }} className="flex flex-col items-center gap-1.5 flex-shrink-0">
-          <div className={`relative rounded-2xl p-[2px] ${s.hasNew ? 'bg-gradient-brand glow-xs' : 'bg-border/50'}`}>
-            <div className="rounded-[14px] p-[2px] bg-background">
-              <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center text-sm font-bold text-muted-foreground">
-                {s.name[0]}
+    <>
+      <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFile} />
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 overflow-x-auto scrollbar-thin pb-1">
+        {ordered.map((s, i) => {
+          const isMe = s.userId === 'me';
+          const hasNew = !s.seen && s.items.length > 0;
+          const firstImage = s.items.find((it) => it.type === 'image')?.content;
+          return (
+            <motion.button
+              key={s.id}
+              onClick={() => openViewer(s.id)}
+              whileTap={{ scale: 0.94 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.05 }}
+              className="flex flex-col items-center gap-1.5 flex-shrink-0"
+            >
+              <div className={`relative rounded-2xl p-[2px] ${hasNew ? 'bg-gradient-brand glow-xs' : 'bg-border/50'}`}>
+                <div className="rounded-[14px] p-[2px] bg-background">
+                  <div className="w-14 h-14 rounded-xl bg-secondary overflow-hidden flex items-center justify-center text-sm font-bold text-muted-foreground">
+                    {firstImage ? (
+                      <img src={firstImage} alt="" className="w-full h-full object-cover" />
+                    ) : isMe && me.avatar ? (
+                      <img src={me.avatar} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{(isMe ? me.name || 'V' : s.userName)[0].toUpperCase()}</span>
+                    )}
+                  </div>
+                </div>
+                {isMe && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setComposerOpen(true); }}
+                    className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-brand rounded-lg flex items-center justify-center border-2 border-background"
+                  >
+                    <Plus className="w-3 h-3 text-primary-foreground" />
+                  </button>
+                )}
               </div>
-            </div>
-            {s.isMe && (
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-brand rounded-lg flex items-center justify-center border-2 border-background">
-                <span className="text-primary-foreground text-[10px] font-bold">+</span>
+              <span className="text-[10px] text-muted-foreground font-medium max-w-[64px] truncate">{isMe ? 'Você' : s.userName.split(' ')[0]}</span>
+            </motion.button>
+          );
+        })}
+      </motion.div>
+
+      <AnimatePresence>
+        {active && (
+          <StatusViewer
+            status={active}
+            onClose={() => setViewerIdx(null)}
+            onNext={() => setViewerIdx((i) => (i !== null && i < ordered.length - 1 ? i + 1 : null))}
+            onPrev={() => setViewerIdx((i) => (i !== null && i > 0 ? i - 1 : i))}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {composerOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setComposerOpen(false)}
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 40, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md glass-strong glass-border rounded-3xl p-5 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-foreground">Novo Story</h3>
+                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setComposerOpen(false)}>
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
-            )}
-          </div>
-          <span className="text-[10px] text-muted-foreground font-medium">{s.name}</span>
-        </motion.button>
-      ))}
-    </motion.div>
+
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="w-full flex items-center gap-3 p-3 rounded-2xl glass glass-border hover:glow-xs transition-all"
+              >
+                <div className="w-10 h-10 rounded-xl bg-gradient-brand flex items-center justify-center">
+                  <Camera className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-foreground">Enviar foto</p>
+                  <p className="text-[11px] text-muted-foreground">Da galeria (máx 10MB)</p>
+                </div>
+              </button>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <TypeIcon className="w-3.5 h-3.5" /> Story de texto
+                </div>
+                <div className={`rounded-2xl p-4 bg-gradient-to-br ${storyBg} min-h-[120px] flex items-center justify-center`}>
+                  <textarea
+                    value={storyText}
+                    onChange={(e) => setStoryText(e.target.value)}
+                    placeholder="Escreva algo..."
+                    className="w-full bg-transparent text-center font-bold text-lg text-foreground placeholder:text-foreground/60 outline-none resize-none"
+                    rows={3}
+                    maxLength={140}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  {STORY_BG_OPTIONS.map((bg) => (
+                    <button
+                      key={bg}
+                      onClick={() => setStoryBg(bg)}
+                      className={`flex-1 h-8 rounded-lg bg-gradient-to-br ${bg} ${storyBg === bg ? 'ring-2 ring-primary' : ''}`}
+                    />
+                  ))}
+                </div>
+                <Button className="w-full rounded-xl" disabled={!storyText.trim()} onClick={publishText}>
+                  Publicar story
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

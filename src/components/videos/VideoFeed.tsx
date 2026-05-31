@@ -1,11 +1,11 @@
-import { useState, useRef, useCallback } from 'react';
-import { videoData, VideoPost } from '@/data/statusData';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { UserAvatar } from '@/components/chat/UserAvatar';
-import { Heart, MessageCircle, Share2, Bookmark, Music, Plus, Upload, Send, X } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, Music, Plus, Upload, Send, X, Volume2, VolumeX, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useProfileStore } from '@/store/profileStore';
+import { useVideoStore, type LocalVideo } from '@/store/videoStore';
 
 function formatCount(n: number): string {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
@@ -13,42 +13,58 @@ function formatCount(n: number): string {
   return n.toString();
 }
 
-interface LocalVideo extends VideoPost {
-  videoUrl?: string;
-}
+type FeedMode = 'foryou' | 'saved' | 'liked';
 
 interface VideoCardProps {
   video: LocalVideo;
   isActive: boolean;
+  muted: boolean;
+  onToggleMute: () => void;
   onComment: (id: string, text: string) => void;
   comments: { id: string; user: string; text: string }[];
 }
 
-function VideoCard({ video, isActive, onComment, comments }: VideoCardProps) {
-  const [liked, setLiked] = useState(video.isLiked);
-  const [likes, setLikes] = useState(video.likes);
-  const [shares, setShares] = useState(video.shares);
-  const [saved, setSaved] = useState(false);
+function VideoCard({ video, isActive, muted, onToggleMute, onComment, comments }: VideoCardProps) {
+  const { toggleLike, toggleSave, incrementShare, likedIds, savedIds } = useVideoStore();
+  const liked = likedIds.includes(video.id);
+  const saved = savedIds.includes(video.id);
   const [showHeart, setShowHeart] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState('');
-  const me = useProfileStore((s) => s.profile);
 
   const handleDoubleTap = () => {
-    if (!liked) { setLiked(true); setLikes((l) => l + 1); }
+    if (!liked) toggleLike(video.id);
     setShowHeart(true);
     setTimeout(() => setShowHeart(false), 800);
   };
 
-  const toggleLike = () => { setLiked(!liked); setLikes((l) => (liked ? l - 1 : l + 1)); };
-
   const handleShare = async () => {
     const data = { title: 'iSync', text: video.description, url: window.location.href };
     try {
-      if (navigator.share) await navigator.share(data);
-      else { await navigator.clipboard.writeText(`${video.description} — @${video.userName}`); toast.success('Link copiado'); }
-      setShares((s) => s + 1);
-    } catch { /* cancelled */ }
+      if (navigator.share) {
+        await navigator.share(data);
+        toast.success('Compartilhado!');
+      } else {
+        await navigator.clipboard.writeText(`${video.description} — @${video.userName}\n${window.location.href}`);
+        toast.success('Link copiado para a área de transferência');
+      }
+      incrementShare(video.id);
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') {
+        try {
+          await navigator.clipboard.writeText(`${video.description} — @${video.userName}`);
+          toast.success('Link copiado');
+          incrementShare(video.id);
+        } catch {
+          toast.error('Não foi possível compartilhar');
+        }
+      }
+    }
+  };
+
+  const handleSave = () => {
+    toggleSave(video.id);
+    toast.success(saved ? 'Removido dos salvos' : 'Vídeo salvo');
   };
 
   const submitComment = () => {
@@ -62,16 +78,18 @@ function VideoCard({ video, isActive, onComment, comments }: VideoCardProps) {
       {video.videoUrl ? (
         <video
           src={video.videoUrl}
+          poster={video.thumbnail || undefined}
           autoPlay={isActive}
           loop
-          muted
+          muted={muted}
           playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+          preload="metadata"
+          className="absolute inset-0 w-full h-full object-cover bg-black"
           onDoubleClick={handleDoubleTap}
         />
       ) : (
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center bg-black"
           style={{ backgroundImage: `url(${video.thumbnail})` }}
           onDoubleClick={handleDoubleTap}
         />
@@ -86,6 +104,11 @@ function VideoCard({ video, isActive, onComment, comments }: VideoCardProps) {
         )}
       </AnimatePresence>
 
+      {/* Mute toggle */}
+      <button onClick={onToggleMute} className="absolute top-16 right-3 z-10 p-2 rounded-full glass glass-border">
+        {muted ? <VolumeX className="w-4 h-4 text-foreground" /> : <Volume2 className="w-4 h-4 text-foreground" />}
+      </button>
+
       {/* Right actions */}
       <div className="absolute right-3 bottom-32 z-10 flex flex-col items-center gap-5">
         <div className="relative">
@@ -95,11 +118,11 @@ function VideoCard({ video, isActive, onComment, comments }: VideoCardProps) {
           </div>
         </div>
 
-        <button onClick={toggleLike} className="flex flex-col items-center gap-1">
+        <button onClick={() => toggleLike(video.id)} className="flex flex-col items-center gap-1">
           <div className={`p-2 rounded-2xl ${liked ? 'bg-red-500/20' : 'glass glass-border'} transition-all`}>
             <Heart className={`w-6 h-6 ${liked ? 'fill-red-500 text-red-500' : 'text-foreground'}`} />
           </div>
-          <span className="text-[11px] font-semibold text-foreground">{formatCount(likes)}</span>
+          <span className="text-[11px] font-semibold text-foreground">{formatCount(video.likes)}</span>
         </button>
 
         <button onClick={() => setShowComments(true)} className="flex flex-col items-center gap-1">
@@ -113,19 +136,20 @@ function VideoCard({ video, isActive, onComment, comments }: VideoCardProps) {
           <div className="p-2 rounded-2xl glass glass-border">
             <Share2 className="w-6 h-6 text-foreground" />
           </div>
-          <span className="text-[11px] font-semibold text-foreground">{formatCount(shares)}</span>
+          <span className="text-[11px] font-semibold text-foreground">{formatCount(video.shares)}</span>
         </button>
 
-        <button onClick={() => setSaved(!saved)} className="flex flex-col items-center gap-1">
+        <button onClick={handleSave} className="flex flex-col items-center gap-1">
           <div className={`p-2 rounded-2xl ${saved ? 'bg-amber-400/20' : 'glass glass-border'} transition-all`}>
             <Bookmark className={`w-6 h-6 ${saved ? 'fill-amber-400 text-amber-400' : 'text-foreground'}`} />
           </div>
+          <span className="text-[11px] font-semibold text-foreground">{saved ? 'Salvo' : 'Salvar'}</span>
         </button>
       </div>
 
       {/* Bottom info */}
       <div className="absolute bottom-6 left-3 right-16 z-10">
-        <p className="font-bold text-sm text-foreground mb-1 drop-shadow-lg">@{video.userName.toLowerCase().replace(' ', '_')}</p>
+        <p className="font-bold text-sm text-foreground mb-1 drop-shadow-lg">@{video.userName.toLowerCase().replace(/\s+/g, '_')}</p>
         <p className="text-sm text-foreground/90 leading-relaxed mb-2 drop-shadow">{video.description}</p>
         <div className="flex flex-wrap gap-1 mb-2">
           {video.tags.map((tag) => (
@@ -169,12 +193,20 @@ function VideoCard({ video, isActive, onComment, comments }: VideoCardProps) {
 }
 
 export function VideoFeed() {
-  const [videos, setVideos] = useState<LocalVideo[]>(videoData as LocalVideo[]);
+  const { videos, likedIds, savedIds, addVideo } = useVideoStore();
+  const [mode, setMode] = useState<FeedMode>('foryou');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [muted, setMuted] = useState(true);
   const [commentsByVideo, setCommentsByVideo] = useState<Record<string, { id: string; user: string; text: string }[]>>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const me = useProfileStore((s) => s.profile);
+
+  const filtered = useMemo(() => {
+    if (mode === 'saved') return videos.filter((v) => savedIds.includes(v.id));
+    if (mode === 'liked') return videos.filter((v) => likedIds.includes(v.id));
+    return videos;
+  }, [videos, mode, likedIds, savedIds]);
 
   const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
@@ -188,7 +220,7 @@ export function VideoFeed() {
     if (!f) return;
     if (f.size > 50 * 1024 * 1024) return toast.error('Vídeo muito grande (máx 50MB)');
     const url = URL.createObjectURL(f);
-    const newVideo: LocalVideo = {
+    addVideo({
       id: 'v_' + Date.now(),
       userId: 'me',
       userName: me.name || 'Você',
@@ -201,8 +233,8 @@ export function VideoFeed() {
       isLiked: false,
       tags: ['novo'],
       timestamp: new Date(),
-    };
-    setVideos((v) => [newVideo, ...v]);
+    });
+    setMode('foryou');
     containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     toast.success('Vídeo publicado!');
   };
@@ -214,10 +246,28 @@ export function VideoFeed() {
     }));
   };
 
+  const tabs: { key: FeedMode; label: string; count?: number }[] = [
+    { key: 'foryou', label: 'Para você' },
+    { key: 'saved', label: 'Salvos', count: savedIds.length },
+    { key: 'liked', label: 'Curtidos', count: likedIds.length },
+  ];
+
   return (
     <div className="flex flex-col h-full bg-background relative">
-      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 pt-4 pb-2">
-        <h1 className="text-lg font-bold text-gradient drop-shadow-lg">Explorar</h1>
+      <div className="absolute top-0 left-0 right-0 z-20 px-3 pt-3 pb-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1 glass glass-border rounded-full p-1">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => { setMode(t.key); setActiveIndex(0); containerRef.current?.scrollTo({ top: 0 }); }}
+              className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all ${
+                mode === t.key ? 'bg-gradient-brand text-primary-foreground glow-xs' : 'text-foreground/80 hover:text-foreground'
+              }`}
+            >
+              {t.label}{typeof t.count === 'number' ? ` · ${t.count}` : ''}
+            </button>
+          ))}
+        </div>
         <input ref={fileRef} type="file" accept="video/*" hidden onChange={handleUpload} />
         <Button size="sm" className="rounded-xl gap-1.5 bg-gradient-brand border-0 glow-xs" onClick={() => fileRef.current?.click()}>
           <Upload className="w-4 h-4" /> Postar
@@ -230,16 +280,39 @@ export function VideoFeed() {
         className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-thin"
         style={{ scrollSnapType: 'y mandatory' }}
       >
-        {videos.map((video, i) => (
-          <div key={video.id} className="h-full w-full" style={{ minHeight: '100%' }}>
-            <VideoCard
-              video={video}
-              isActive={i === activeIndex}
-              comments={commentsByVideo[video.id] ?? []}
-              onComment={addComment}
-            />
+        {filtered.length === 0 ? (
+          <div className="h-full w-full flex flex-col items-center justify-center text-center px-8 gap-3">
+            <div className="w-16 h-16 rounded-3xl bg-gradient-brand flex items-center justify-center glow-xs">
+              <Sparkles className="w-7 h-7 text-primary-foreground" />
+            </div>
+            <p className="text-base font-bold text-foreground">
+              {mode === 'saved' ? 'Nenhum vídeo salvo ainda' : mode === 'liked' ? 'Nenhum vídeo curtido' : 'Sem vídeos'}
+            </p>
+            <p className="text-xs text-muted-foreground max-w-xs">
+              {mode === 'saved'
+                ? 'Toque no marcador em qualquer vídeo para guardar aqui.'
+                : mode === 'liked'
+                ? 'Os vídeos que você curtir aparecem nesta aba.'
+                : 'Volte mais tarde para descobrir novos conteúdos.'}
+            </p>
+            <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setMode('foryou')}>
+              Explorar vídeos
+            </Button>
           </div>
-        ))}
+        ) : (
+          filtered.map((video, i) => (
+            <div key={video.id} className="h-full w-full" style={{ minHeight: '100%' }}>
+              <VideoCard
+                video={video}
+                isActive={i === activeIndex}
+                muted={muted}
+                onToggleMute={() => setMuted((m) => !m)}
+                comments={commentsByVideo[video.id] ?? []}
+                onComment={addComment}
+              />
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
